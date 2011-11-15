@@ -86,7 +86,7 @@ public class Main extends JavaPlugin {
                 sqlConfig.save(f);
                 return false;
             }
-
+            sqlConfig.load(f);
             dbHandler = new DatabaseHandler(sqlConfig.getString("host"), sqlConfig.getInt("port"), sqlConfig.getString("database"), sqlConfig.getString("username"), sqlConfig.getString("password"));
         } catch (Exception e) {
             e.printStackTrace();
