@@ -21,27 +21,46 @@ package de.minestar.director;
 import java.io.File;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.Event.Priority;
+import org.bukkit.event.Event.Type;
+import org.bukkit.event.block.BlockListener;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.minestar.director.database.DatabaseHandler;
+import de.minestar.director.listener.BlockChangeListener;
 
 public class Main extends JavaPlugin {
 
     private DatabaseHandler dbHandler;
 
     public static void printToConsole(String msg) {
-        System.out.println("[ GreenMile ] : " + msg);
+        System.out.println("[ DirectorsPlugin ] : " + msg);
     }
 
     @Override
     public void onDisable() {
         dbHandler = null;
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void onEnable() {
+
+        // when we don't have a connection to the database, the whole plugin
+        // can't work
+        if (!initDatabase()) {
+            printToConsole("------------------------------------------");
+            printToConsole("- COULD NOT CONNECT TO DIRECTOR DATABASE -");
+            printToConsole("------------------------------------------");
+            return;
+        }
+
+        // Register event listener
+        PluginManager pm = getServer().getPluginManager();
+        BlockListener bListener = new BlockChangeListener(dbHandler);
+        pm.registerEvent(Type.BLOCK_BREAK, bListener, Priority.Normal, this);
+        pm.registerEvent(Type.BLOCK_PLACE, bListener, Priority.Normal, this);
 
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
@@ -54,6 +73,7 @@ public class Main extends JavaPlugin {
             f.mkdirs();
             f = new File(f.getAbsolutePath() + "/sqlconfig.yml");
             FileConfiguration sqlConfig = getConfig();
+
             if (!f.exists()) {
                 printToConsole("Can't find sql configuration!");
                 printToConsole("Create an empty configuration file at plugins/DirectorsPlugin/sqlconfig.yml");
@@ -75,5 +95,4 @@ public class Main extends JavaPlugin {
 
         return true;
     }
-
 }
