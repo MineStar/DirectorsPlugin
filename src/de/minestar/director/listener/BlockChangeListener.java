@@ -18,6 +18,7 @@
 
 package de.minestar.director.listener;
 
+import org.bukkit.ChatColor;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -41,12 +42,17 @@ public class BlockChangeListener extends BlockListener {
 
     @Override
     public void onBlockBreak(BlockBreakEvent event) {
-        // TODO Add blockChange handling conected to dbHandler
+        if (!dbHandler.addBlockBreak(event.getBlock(), event.getPlayer().getName().toLowerCase(), "PLACEHOLDER FOR AREANAME")) {
+            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+            event.setCancelled(true);
+        }
     }
 
     @Override
     public void onBlockPlace(BlockPlaceEvent event) {
-        // TODO Add blockChange handling conected to dbHandler
+        if (!dbHandler.addBlockPlace(event.getBlockPlaced(), event.getBlockReplacedState().getBlock(), event.getPlayer().getName().toLowerCase(), "PLACEHOLDER FOR AREANAME")) {
+            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+            event.setCancelled(true);
+        }
     }
-
 }

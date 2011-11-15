@@ -80,7 +80,7 @@ public class DatabaseHandler {
                         + "`OldBlockData` int(11) DEFAULT NULL,"
                         + "`DateTime` datetime DEFAULT NULL,"
                         + "`PlayerName` varchar(255) DEFAULT NULL,"
-                        + "`EventType` tinyint(1) DEFAULT NULL,"
+                        + "`EventType` char(1) DEFAULT NULL,"
                         + "`AreaName` varchar(255) DEFAULT NULL,"
                         + " PRIMARY KEY (`Id`)"
                         + ") ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
@@ -131,16 +131,14 @@ public class DatabaseHandler {
      *            The block that was replaced by newBlock
      * @param playerName
      *            The player who changed the block
-     * @param eventType
-     *            The type
      * @param areaName
      *            The watched area name
      * @return True when it was succesfull.
      */
-    public boolean addBlockChange(Block newBlock, Block currentBlock, String playerName, int eventType, String areaName) {
+    public boolean addBlockPlace(Block newBlock, Block currentBlock, String playerName, String areaName) {
 
         try {
-            addBlockChange.setString(1, newBlock.getWorld().toString().toLowerCase());
+            addBlockChange.setString(1, newBlock.getWorld().getName().toLowerCase());
             addBlockChange.setInt(2, newBlock.getX());
             addBlockChange.setInt(3, newBlock.getY());
             addBlockChange.setInt(4, newBlock.getZ());
@@ -149,7 +147,7 @@ public class DatabaseHandler {
             addBlockChange.setInt(7, currentBlock.getTypeId());
             addBlockChange.setInt(8, currentBlock.getData());
             addBlockChange.setString(9, playerName);
-            addBlockChange.setInt(10, eventType);
+            addBlockChange.setString(10, "p");
             addBlockChange.setString(11, areaName);
             return addBlockChange.executeUpdate() == 1;
         } catch (Exception e) {
@@ -159,4 +157,25 @@ public class DatabaseHandler {
         }
     }
 
+    public boolean addBlockBreak(Block oldBlock, String playerName, String areaName) {
+
+        try {
+            addBlockChange.setString(1, oldBlock.getWorld().getName().toLowerCase());
+            addBlockChange.setInt(2, oldBlock.getX());
+            addBlockChange.setInt(3, oldBlock.getY());
+            addBlockChange.setInt(4, oldBlock.getZ());
+            addBlockChange.setInt(5, 0);
+            addBlockChange.setInt(6, 0);
+            addBlockChange.setInt(7, oldBlock.getTypeId());
+            addBlockChange.setInt(8, oldBlock.getData());
+            addBlockChange.setString(9, playerName);
+            addBlockChange.setString(10, "b");
+            addBlockChange.setString(11, areaName);
+            return addBlockChange.executeUpdate() == 1;
+        } catch (Exception e) {
+            Main.printToConsole("Error! Can't save a block break to database!");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
