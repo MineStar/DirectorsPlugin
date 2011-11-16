@@ -97,8 +97,7 @@ public class AreaDataHandler {
             dir.mkdirs();
 
             // CHECK FILE EXISTS
-            File file = new File("plugins/DirectorsPlugin/Areas/" + areaName + ".dp");
-            if (!file.exists())
+            if (!areaExists(areaName))
                 return "No Area named '" + areaName + "' defined!";
 
             // READ DATA FROM FILE
@@ -145,5 +144,9 @@ public class AreaDataHandler {
             e.printStackTrace();
             return "Error while loading File!";
         }
+    }
+
+    public static boolean areaExists(String name) {
+        return new File("plugins/DirectorsPlugin/Areas/" + name + ".dp").exists();
     }
 }
