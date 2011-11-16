@@ -40,8 +40,8 @@ public class Area {
         this.areaName = areaName;
         this.areaOwner = areaOwner;
         this.worldName = worldName;
-        this.minChunk = new Point(Math.min(chunk1.getX(), chunk2.getX()), Math.min(chunk1.getX(), chunk2.getX()));
-        this.maxChunk = new Point(Math.max(chunk1.getX(), chunk2.getX()), Math.max(chunk1.getX(), chunk2.getX()));
+        this.minChunk = new Point(Math.min(chunk1.getX(), chunk2.getX()), Math.min(chunk1.getZ(), chunk2.getZ()));
+        this.maxChunk = new Point(Math.max(chunk1.getX(), chunk2.getX()), Math.max(chunk1.getZ(), chunk2.getZ()));
         this.rectangle = new Rectangle(this.minChunk.x, this.minChunk.y, this.maxChunk.x, this.maxChunk.y);
     }
 
