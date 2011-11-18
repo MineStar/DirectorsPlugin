@@ -129,7 +129,6 @@ public class Main extends JavaPlugin {
             
             sqlConfig = new YamlConfiguration();
             sqlConfig.load(f);
-            System.out.println(sqlConfig.getString("host"));
             dbHandler = new DatabaseHandler(sqlConfig.getString("host"), sqlConfig.getInt("port"), sqlConfig.getString("database"), sqlConfig.getString("username"), sqlConfig.getString("password"));
         } catch (Exception e) {
             e.printStackTrace();

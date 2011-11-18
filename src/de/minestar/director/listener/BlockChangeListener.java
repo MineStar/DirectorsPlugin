@@ -19,10 +19,13 @@
 package de.minestar.director.listener;
 
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
 
+import de.minestar.director.Main;
+import de.minestar.director.area.Area;
 import de.minestar.director.database.DatabaseHandler;
 
 /**
@@ -42,7 +45,24 @@ public class BlockChangeListener extends BlockListener {
 
     @Override
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!dbHandler.addBlockBreak(event.getBlock(), event.getPlayer().getName().toLowerCase(), "PLACEHOLDER FOR AREANAME")) {
+        boolean found = false;
+        Block block = event.getBlock();
+        Area foundArea = null;
+        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+            System.out.println("checking: " + thisArea.getAreaName());
+            if(thisArea.isBlockInArea(block)) {
+                found = true;
+                foundArea = thisArea;
+              System.out.println("found");
+                break;
+            }
+            System.out.println("not found");
+        }
+
+        if (!found)
+            return;
+        
+        if (!dbHandler.addBlockBreak(event.getBlock(), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
             event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
@@ -50,7 +70,24 @@ public class BlockChangeListener extends BlockListener {
 
     @Override
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!dbHandler.addBlockPlace(event.getBlockPlaced(), event.getBlockReplacedState().getBlock(), event.getPlayer().getName().toLowerCase(), "PLACEHOLDER FOR AREANAME")) {
+        boolean found = false;
+        Block block = event.getBlock();
+        Area foundArea = null;
+        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+            System.out.println("checking: " + thisArea.getAreaName());
+            if(thisArea.isBlockInArea(block)) {
+                found = true;
+                foundArea = thisArea;
+              System.out.println("found");
+                break;
+            }
+            System.out.println("not found");
+        }
+
+        if (!found)
+            return;
+
+        if (!dbHandler.addBlockPlace(event.getBlockPlaced(), event.getBlockReplacedState().getBlock(), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
             event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
