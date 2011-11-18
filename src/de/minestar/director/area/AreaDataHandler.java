@@ -33,6 +33,7 @@ import de.minestar.director.Main;
 public class AreaDataHandler {    
     
     public static String saveArea(String areaName, Chunk chunk1, Chunk chunk2) {
+        areaName = areaName.toLowerCase();
         // CHECK CHUNKS
         if (chunk1 == null || chunk2 == null)
             return "You must select 2 Chunks.";
@@ -80,6 +81,7 @@ public class AreaDataHandler {
     }
     
     public static String resetArea(String areaName, String worldName, Point chunkPos1, Point chunkPos2) {
+        areaName = areaName.toLowerCase();
         // GET WORLD
         World world = Bukkit.getServer().getWorld(worldName);
         if (world == null) {
@@ -103,6 +105,7 @@ public class AreaDataHandler {
     }
 
     public static String resetArea(String areaName, Chunk chunk1, Chunk chunk2) {
+        areaName = areaName.toLowerCase();
         // CHECK CHUNKS
         if (chunk1 == null || chunk2 == null)
             return "You must select 2 Chunks.";
