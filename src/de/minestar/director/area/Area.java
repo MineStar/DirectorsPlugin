@@ -26,6 +26,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public class Area {
+    private int ID = -1;
     private String areaOwner = "";
     private String areaName = "";
     private String worldName = "";
@@ -36,7 +37,8 @@ public class Area {
     // ///////////////////////////
     // CONSTRUCTOR
     // ///////////////////////////
-    public Area(final String areaName, final String areaOwner, final String worldName, Chunk chunk1, Chunk chunk2) {
+    public Area(final int ID, final String areaName, final String areaOwner, final String worldName, Chunk chunk1, Chunk chunk2) {
+        this.ID = ID;
         this.areaName = areaName;
         this.areaOwner = areaOwner;
         this.worldName = worldName;
@@ -44,11 +46,13 @@ public class Area {
         this.maxChunk = new Point(Math.max(chunk1.getX(), chunk2.getX()), Math.max(chunk1.getZ(), chunk2.getZ()));
         this.rectangle = new Rectangle(this.minChunk.x, this.minChunk.y, this.maxChunk.x, this.maxChunk.y);
     }
-
+    
     // ///////////////////////////
     // IS BLOCK IN AREA
     // ///////////////////////////
     public boolean isBlockInArea(final Block block) {
+        if(!block.getWorld().getName().equalsIgnoreCase(this.worldName))
+            return false;
         return rectangle.contains(block.getX(), block.getZ());
     }
 
@@ -56,6 +60,8 @@ public class Area {
     // IS AREA IN AREA
     // ///////////////////////////
     public boolean intersectsArea(final Area otherArea) {
+        if(!otherArea.getWorldName().equalsIgnoreCase(this.worldName))
+            return false;
         return rectangle.intersects(otherArea.getRectangle());
     }
     
@@ -95,5 +101,9 @@ public class Area {
 
     public Rectangle getRectangle() {
         return this.rectangle;
+    }
+    
+    public int getID() {
+        return this.ID;
     }
 }

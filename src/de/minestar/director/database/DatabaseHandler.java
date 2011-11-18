@@ -20,17 +20,24 @@ package de.minestar.director.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.TreeMap;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import de.minestar.director.Main;
+import de.minestar.director.area.Area;
 
 public class DatabaseHandler {
 
     private final DatabaseConnection conHandler;
 
     // PREPARED STATEMENTS
-    private PreparedStatement addBlockChange;
+    private PreparedStatement addBlockChange, getAllAreas;
     // /PREPARED STATEMENTS
 
     public DatabaseHandler(String host, int port, String database, String userName, String password) {
@@ -118,6 +125,8 @@ public class DatabaseHandler {
         		                              "(WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) " +
         		                              "VALUES(?,?,?,?,?,?,?,?,NOW(),?,?,?)");
         
+        getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ´ID´ asc");
+        
         //@formatter:on
     }
 
@@ -177,5 +186,49 @@ public class DatabaseHandler {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public TreeMap<String, Area> loadAreas() {
+        TreeMap<String, Area> map = new TreeMap<String, Area>();
+
+        try {
+            ResultSet set = getAllAreas.executeQuery();
+            int ID;
+            String areaName, worldName, areaOwner;
+            int x1, z1, x2, z2;
+            World world;
+            Chunk chunk1, chunk2;
+            
+            while(set.next()) {
+                ID = set.getInt("Id");
+                areaName = set.getString("AreaName");
+                worldName = set.getString("AreaWorld");
+                areaOwner = set.getString("AreaOwner");
+                x1 = set.getInt("Chunk1X");
+                z1 = set.getInt("Chunk1Z");
+                x2 = set.getInt("Chunk2X");
+                z2 = set.getInt("Chunk2Z");
+                
+                // GET WORLD
+                world = Bukkit.getServer().getWorld(worldName);
+                if(world == null)
+                    continue;
+                
+                // GET CHUNKS
+                chunk1 = world.getChunkAt(x1, z1);
+                chunk2 = world.getChunkAt(x2, z2);
+                if(chunk1 == null || chunk2 == null)
+                    continue;
+                
+                // PUT IN MAP
+                map.put(areaName, new Area(ID, areaName, areaOwner, worldName, chunk1, chunk2));
+            }
+        } catch (SQLException e) {
+            Main.printToConsole("Error! Can't load areas from database!");
+            
+            e.printStackTrace();
+        }
+
+        return map;
     }
 }

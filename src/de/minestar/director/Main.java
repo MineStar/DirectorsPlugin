@@ -28,6 +28,7 @@ import org.bukkit.event.block.BlockListener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.minestar.director.area.AreaHandler;
 import de.minestar.director.commands.Command;
 import de.minestar.director.commands.CommandList;
 import de.minestar.director.commands.dir.AreaSaveCommand;
@@ -41,6 +42,8 @@ import de.minestar.director.listener.BlockChangeListener;
 public class Main extends JavaPlugin {
 
     private DatabaseHandler dbHandler;
+    
+    private AreaHandler areaHandler;
 
     private AreaDefineListener adListener;
 
@@ -62,7 +65,6 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-
         // when we don't have a connection to the database, the whole plugin
         // can't work
         if (!initDatabase()) {
@@ -72,6 +74,7 @@ public class Main extends JavaPlugin {
             return;
         }
 
+        // INIT COMMANDLIST , GeMoschen
         initCommandList();
 
         // Register event listener
@@ -83,6 +86,9 @@ public class Main extends JavaPlugin {
         adListener = new AreaDefineListener();
         pm.registerEvent(Type.PLAYER_INTERACT, adListener, Priority.Normal, this);
 
+        // INIT AREAHANDLER , GeMoschen
+        this.areaHandler = new AreaHandler(this.dbHandler);
+        
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
 
@@ -98,6 +104,7 @@ public class Main extends JavaPlugin {
         cmdList = new CommandList(commands);
         //@formatter:on
     }
+    
     private boolean initDatabase() {
 
         try {
@@ -131,9 +138,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {
-
         cmdList.handleCommand(sender, label, args);
-
         return true;
     }
 }
