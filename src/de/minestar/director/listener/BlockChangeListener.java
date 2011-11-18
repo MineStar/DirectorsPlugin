@@ -49,19 +49,16 @@ public class BlockChangeListener extends BlockListener {
         Block block = event.getBlock();
         Area foundArea = null;
         for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
-            System.out.println("checking: " + thisArea.getAreaName());
-            if(thisArea.isBlockInArea(block)) {
+            if (thisArea.isBlockInArea(block)) {
                 found = true;
                 foundArea = thisArea;
-              System.out.println("found");
                 break;
             }
-            System.out.println("not found");
         }
 
         if (!found)
             return;
-        
+
         if (!dbHandler.addBlockBreak(event.getBlock(), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
             event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
@@ -74,20 +71,17 @@ public class BlockChangeListener extends BlockListener {
         Block block = event.getBlock();
         Area foundArea = null;
         for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
-            System.out.println("checking: " + thisArea.getAreaName());
-            if(thisArea.isBlockInArea(block)) {
+            if (thisArea.isBlockInArea(block)) {
                 found = true;
                 foundArea = thisArea;
-              System.out.println("found");
                 break;
             }
-            System.out.println("not found");
         }
 
         if (!found)
             return;
 
-        if (!dbHandler.addBlockPlace(event.getBlockPlaced(), event.getBlockReplacedState().getBlock(), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
+        if (!dbHandler.addBlockPlace(event.getBlockPlaced(), event.getBlock().getWorld().getBlockAt(event.getBlock().getLocation()), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
             event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }

@@ -42,30 +42,40 @@ public class Area {
         this.worldName = worldName;
         this.minChunk = new Point(Math.min(chunk1.getX(), chunk2.getX()), Math.min(chunk1.getZ(), chunk2.getZ()));
         this.maxChunk = new Point(Math.max(chunk1.getX(), chunk2.getX()), Math.max(chunk1.getZ(), chunk2.getZ()));
-        this.rectangle = new Rectangle(this.minChunk.x, this.minChunk.y, this.maxChunk.x, this.maxChunk.y);
+        this.rectangle = new Rectangle(this.minChunk.x, this.minChunk.y, this.maxChunk.x - this.minChunk.x, this.maxChunk.y - this.minChunk.y);
     }
-    
+
     // ///////////////////////////
     // IS BLOCK IN AREA
     // ///////////////////////////
     public boolean isBlockInArea(final Block block) {
-        if(!block.getWorld().getName().equalsIgnoreCase(this.worldName))
+        if (!block.getWorld().getName().equalsIgnoreCase(this.worldName))
             return false;
-        return rectangle.contains(block.getX(), block.getZ());
+        int chunkX = block.getChunk().getX();
+        int chunkZ = block.getChunk().getZ();
+        if (chunkX < this.minChunk.x)
+            return false;
+        if (chunkZ < this.minChunk.y)
+            return false;
+        if (chunkX > this.maxChunk.x)
+            return false;
+        if (chunkZ > this.maxChunk.y)
+            return false;
+        return true;
     }
 
     // ///////////////////////////
     // IS AREA IN AREA
     // ///////////////////////////
     public boolean intersectsArea(final Area otherArea) {
-        if(!otherArea.getWorldName().equalsIgnoreCase(this.worldName))
+        if (!otherArea.getWorldName().equalsIgnoreCase(this.worldName))
             return false;
         return rectangle.intersects(otherArea.getRectangle());
     }
-    
+
     // ///////////////////////////
     // IS AREAOWNER
-    // ///////////////////////////   
+    // ///////////////////////////
     public boolean isOwner(Player player) {
         return this.isOwner(player.getName());
     }
@@ -73,14 +83,14 @@ public class Area {
     public boolean isOwner(String playerName) {
         return this.getAreaOwner().equalsIgnoreCase(playerName);
     }
-    
+
     // ///////////////////////////
     // GETTER
     // ///////////////////////////
     public String getAreaName() {
         return this.areaName;
     }
-    
+
     public String getAreaOwner() {
         return this.areaOwner;
     }
@@ -99,5 +109,5 @@ public class Area {
 
     public Rectangle getRectangle() {
         return this.rectangle;
-    } 
+    }
 }
