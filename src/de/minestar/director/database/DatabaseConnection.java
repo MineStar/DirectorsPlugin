@@ -45,6 +45,7 @@ public class DatabaseConnection {
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://" + host + ":"
                     + port + "/" + database, userName, password);
+            
         }
         catch (Exception e) {
             e.printStackTrace();

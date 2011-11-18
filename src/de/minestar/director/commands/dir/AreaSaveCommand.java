@@ -49,7 +49,7 @@ public class AreaSaveCommand extends Command {
             return;
         }
 
-        Chunk[] selection = adListener.getCorners(areaName);
+        Chunk[] selection = adListener.getCorners(player.getName());
         if (selection == null) {
             player.sendMessage("Du musst zwei Bloecke auswaehlen!");
             return;

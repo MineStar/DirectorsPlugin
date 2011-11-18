@@ -96,7 +96,7 @@ public class DatabaseHandler {
                 "CREATE TABLE IF NOT EXISTS `directorareadata` ("
                         + "`Id` int(11) NOT NULL AUTO_INCREMENT,"
                         + "`AreaName` varchar(255) DEFAULT NULL,"
-                        + "`AreaWorld` int(11) DEFAULT NULL,"
+                        + "`AreaWorld` varchar(255) DEFAULT NULL,"
                         + "`Chunk1X` int(11) DEFAULT NULL,"
                         + "`Chunk1Z` int(11) DEFAULT NULL,"
                         + "`Chunk2X` int(11) DEFAULT NULL,"
@@ -125,7 +125,7 @@ public class DatabaseHandler {
         		                              "(WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) " +
         		                              "VALUES(?,?,?,?,?,?,?,?,NOW(),?,?,?)");
         
-        getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ´ID´ asc");
+        getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ID asc");
         
         addArea = con.prepareStatement("INSERT INTO directorareadata" +
                                         "(AreaName, AreaWorld, Chunk1X, Chunk1Z, Chunk2X, Chunk2Z, AreaOwner) " +

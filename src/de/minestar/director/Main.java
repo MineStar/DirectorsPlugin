@@ -21,7 +21,6 @@ package de.minestar.director;
 import java.io.File;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -75,9 +74,6 @@ public class Main extends JavaPlugin {
             return;
         }
 
-        // INIT COMMANDLIST , GeMoschen
-        initCommandList();
-
         // Register event listener
         PluginManager pm = getServer().getPluginManager();
         BlockListener bListener = new BlockChangeListener(dbHandler);
@@ -89,6 +85,9 @@ public class Main extends JavaPlugin {
 
         // INIT AREAHANDLER , GeMoschen
         areaHandler = new AreaHandler(dbHandler);
+        
+        // INIT COMMANDLIST , GeMoschen
+        initCommandList();
         
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
@@ -128,7 +127,9 @@ public class Main extends JavaPlugin {
                 return false;
             }
             
+            sqlConfig = new YamlConfiguration();
             sqlConfig.load(f);
+            System.out.println(sqlConfig.getString("host"));
             dbHandler = new DatabaseHandler(sqlConfig.getString("host"), sqlConfig.getInt("port"), sqlConfig.getString("database"), sqlConfig.getString("username"), sqlConfig.getString("password"));
         } catch (Exception e) {
             e.printStackTrace();
