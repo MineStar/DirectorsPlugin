@@ -198,8 +198,8 @@ public class DatabaseHandler {
             int x1, z1, x2, z2;
             World world;
             Chunk chunk1, chunk2;
-            
-            while(set.next()) {
+
+            while (set.next()) {
                 ID = set.getInt("Id");
                 areaName = set.getString("AreaName");
                 worldName = set.getString("AreaWorld");
@@ -208,24 +208,27 @@ public class DatabaseHandler {
                 z1 = set.getInt("Chunk1Z");
                 x2 = set.getInt("Chunk2X");
                 z2 = set.getInt("Chunk2Z");
-                
+
                 // GET WORLD
                 world = Bukkit.getServer().getWorld(worldName);
-                if(world == null)
+                if (world == null) {
+                    Main.printToConsole("Could not find world '" + worldName + "' for area '" + areaName + "'. Skipping this area.");
                     continue;
-                
+                }
+
                 // GET CHUNKS
                 chunk1 = world.getChunkAt(x1, z1);
                 chunk2 = world.getChunkAt(x2, z2);
-                if(chunk1 == null || chunk2 == null)
+                if (chunk1 == null || chunk2 == null) {
+                    Main.printToConsole("Could not find both chunks for area '" + areaName + "'. Skipping this area.");
                     continue;
+                }
                 
                 // PUT IN MAP
                 map.put(areaName, new Area(ID, areaName, areaOwner, worldName, chunk1, chunk2));
             }
         } catch (SQLException e) {
             Main.printToConsole("Error! Can't load areas from database!");
-            
             e.printStackTrace();
         }
 

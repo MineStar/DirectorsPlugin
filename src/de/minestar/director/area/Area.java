@@ -37,7 +37,7 @@ public class Area {
     // ///////////////////////////
     // CONSTRUCTOR
     // ///////////////////////////
-    public Area(final int ID, final String areaName, final String areaOwner, final String worldName, Chunk chunk1, Chunk chunk2) {
+    public Area(int ID, String areaName, String areaOwner, String worldName, Chunk chunk1, Chunk chunk2) {
         this.ID = ID;
         this.areaName = areaName;
         this.areaOwner = areaOwner;
