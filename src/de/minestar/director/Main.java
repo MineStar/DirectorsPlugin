@@ -22,6 +22,7 @@ import java.io.File;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.block.BlockListener;
@@ -41,7 +42,7 @@ import de.minestar.director.listener.BlockChangeListener;
 
 public class Main extends JavaPlugin {
 
-    private DatabaseHandler dbHandler;
+    private static DatabaseHandler dbHandler;
     
     private static AreaHandler areaHandler;
 
@@ -87,7 +88,7 @@ public class Main extends JavaPlugin {
         pm.registerEvent(Type.PLAYER_INTERACT, adListener, Priority.Normal, this);
 
         // INIT AREAHANDLER , GeMoschen
-        areaHandler = new AreaHandler(this.dbHandler);
+        areaHandler = new AreaHandler(dbHandler);
         
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
@@ -111,10 +112,10 @@ public class Main extends JavaPlugin {
 
             File f = new File("plugins/DirectorsPlugin/");
             f.mkdirs();
-            f = new File(f.getAbsolutePath() + "/sqlconfig.yml");
-            FileConfiguration sqlConfig = getConfig();
-
-            if (!f.exists()) {
+            f = new File(f.getAbsolutePath() + "/sqlconfig.yml");              
+            YamlConfiguration sqlConfig = new YamlConfiguration();
+            
+            if (!f.exists()) {           
                 printToConsole("Can't find sql configuration!");
                 printToConsole("Create an empty configuration file at plugins/DirectorsPlugin/sqlconfig.yml");
                 f.createNewFile();
@@ -126,6 +127,7 @@ public class Main extends JavaPlugin {
                 sqlConfig.save(f);
                 return false;
             }
+            
             sqlConfig.load(f);
             dbHandler = new DatabaseHandler(sqlConfig.getString("host"), sqlConfig.getInt("port"), sqlConfig.getString("database"), sqlConfig.getString("username"), sqlConfig.getString("password"));
         } catch (Exception e) {
@@ -144,5 +146,9 @@ public class Main extends JavaPlugin {
     
     public static AreaHandler getAreaHandler() {
         return areaHandler;
+    }
+    
+    public static DatabaseHandler getDatabaseHandler() {
+        return dbHandler;
     }
 }

@@ -68,6 +68,8 @@ public class AreaSaveCommand extends Command {
         
         // ADD AREA , GeMoschen
         Main.getAreaHandler().addArea(newArea);
+        // SAVE AREA TO DB , GeMoschen
+        Main.getDatabaseHandler().saveArea(newArea);
         
         // SAVE AREA TO FILE AND SEND MESSAGE
         player.sendMessage(AreaDataHandler.saveArea(newArea.getAreaName(), selection[0], selection[1]));

@@ -37,7 +37,7 @@ public class DatabaseHandler {
     private final DatabaseConnection conHandler;
 
     // PREPARED STATEMENTS
-    private PreparedStatement addBlockChange, getAllAreas;
+    private PreparedStatement addBlockChange, getAllAreas, addArea;
     // /PREPARED STATEMENTS
 
     public DatabaseHandler(String host, int port, String database, String userName, String password) {
@@ -127,6 +127,10 @@ public class DatabaseHandler {
         
         getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ´ID´ asc");
         
+        addArea = con.prepareStatement("INSERT INTO directorareadata" +
+                                        "(AreaName, AreaWorld, Chunk1X, Chunk1Z, Chunk2X, Chunk2Z, AreaOwner) " +
+                                        "VALUES(?, ?, ?, ?, ?, ?, ?)");
+        
         //@formatter:on
     }
 
@@ -188,6 +192,23 @@ public class DatabaseHandler {
         }
     }
 
+    public boolean saveArea(Area newArea) {
+        try {
+            addArea.setString(1, newArea.getAreaName());
+            addArea.setString(2, newArea.getWorldName());
+            addArea.setInt(3, newArea.getMinChunk().x);
+            addArea.setInt(4, newArea.getMinChunk().y);
+            addArea.setInt(5, newArea.getMaxChunk().x);
+            addArea.setInt(6, newArea.getMaxChunk().y);            
+            addArea.setString(7, newArea.getAreaOwner());
+            return addArea.executeUpdate() == 1;
+        } catch (Exception e) {
+            Main.printToConsole("Error! Can't save the area '" + newArea.getAreaName() + "' to database!");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public TreeMap<String, Area> loadAreas() {
         TreeMap<String, Area> map = new TreeMap<String, Area>();
 
@@ -221,7 +242,7 @@ public class DatabaseHandler {
                     Main.printToConsole("Could not find both chunks for area '" + areaName + "'. Skipping this area.");
                     continue;
                 }
-                
+
                 // PUT IN MAP
                 map.put(areaName.toLowerCase(), new Area(areaName, areaOwner, worldName, chunk1, chunk2));
             }

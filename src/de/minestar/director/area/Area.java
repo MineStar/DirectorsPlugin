@@ -81,7 +81,7 @@ public class Area {
         return this.areaName;
     }
     
-    private String getAreaOwner() {
+    public String getAreaOwner() {
         return this.areaOwner;
     }
 
@@ -99,5 +99,5 @@ public class Area {
 
     public Rectangle getRectangle() {
         return this.rectangle;
-    }
+    } 
 }
