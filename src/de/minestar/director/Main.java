@@ -43,7 +43,7 @@ public class Main extends JavaPlugin {
 
     private DatabaseHandler dbHandler;
     
-    private AreaHandler areaHandler;
+    private static AreaHandler areaHandler;
 
     private AreaDefineListener adListener;
 
@@ -87,7 +87,7 @@ public class Main extends JavaPlugin {
         pm.registerEvent(Type.PLAYER_INTERACT, adListener, Priority.Normal, this);
 
         // INIT AREAHANDLER , GeMoschen
-        this.areaHandler = new AreaHandler(this.dbHandler);
+        areaHandler = new AreaHandler(this.dbHandler);
         
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
@@ -140,5 +140,9 @@ public class Main extends JavaPlugin {
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {
         cmdList.handleCommand(sender, label, args);
         return true;
+    }
+    
+    public static AreaHandler getAreaHandler() {
+        return areaHandler;
     }
 }

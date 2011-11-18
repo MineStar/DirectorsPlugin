@@ -21,6 +21,8 @@ package de.minestar.director.commands.dir;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 
+import de.minestar.director.Main;
+import de.minestar.director.area.Area;
 import de.minestar.director.area.AreaDataHandler;
 import de.minestar.director.commands.Command;
 import de.minestar.director.listener.AreaDefineListener;
@@ -42,19 +44,32 @@ public class AreaSaveCommand extends Command {
             return;
         }
         String areaName = args[0];
-        if (AreaDataHandler.areaExists(areaName)) {
+        if (Main.getAreaHandler().areaExists(areaName)) {
             player.sendMessage("Ein Area mit dem Namen '" + areaName + "' existiert bereits!");
             return;
         }
-        // ToDo: Check if an existing area is inside the new area(areas
-        // musn't intersect!)
 
         Chunk[] selection = adListener.getCorners(areaName);
         if (selection == null) {
             player.sendMessage("Du musst zwei Bloecke auswaehlen!");
             return;
         }
-        player.sendMessage(AreaDataHandler.saveArea(areaName, selection[0], selection[1]));
-    }
+        
+        // CREATE AREA , GeMoschen
+        Area newArea = new Area(areaName, player.getName(), selection[0].getWorld().getName(), selection[0], selection[1]);
 
+        // Check if an existing area is inside the new area        
+        for(Area otherArea :  Main.getAreaHandler().getAreas().values()) {
+            if(otherArea.intersectsArea(newArea)) {
+                player.sendMessage("Area '" + otherArea.getAreaName() + "' schneidet die neue Area!");
+                return;
+            }
+        }
+        
+        // ADD AREA , GeMoschen
+        Main.getAreaHandler().addArea(newArea);
+        
+        // SAVE AREA TO FILE AND SEND MESSAGE
+        player.sendMessage(AreaDataHandler.saveArea(newArea.getAreaName(), selection[0], selection[1]));
+    }
 }

@@ -41,7 +41,16 @@ public class AreaHandler {
      * @return the Area,if there is an area with that name, otherwise null
      */
     public Area getArea(String areaName) {
-        return this.areaList.get(areaName);
+        return this.areaList.get(areaName.toLowerCase());
+    }
+    
+    /**
+     * areaExists(String areaName)
+     * @param areaName : the name of the area
+     * @return <b>true</b> : if the area exists <br> <b>false</b> : if the area does not exist
+     */
+    public boolean areaExists(String areaName) {
+        return (this.getArea(areaName.toLowerCase()) != null);
     }
 
     /**
@@ -58,10 +67,22 @@ public class AreaHandler {
      * @return <b>false</b> : if the areaname is already in use. <br><b>true</b> : if the area was added.
      */
     public boolean addArea(Area newArea) {
-        if(this.getArea(newArea.getAreaName()) != null)
+        if(this.areaExists(newArea.getAreaName()))
             return false;
         
-        this.areaList.put(newArea.getAreaName(), newArea);
+        this.areaList.put(newArea.getAreaName().toLowerCase(), newArea);
         return true;
+    }
+    
+    /**
+     * resetArea(String areaName)
+     * @param areaName : Area to reset
+     * @return The resultstring of what has happened
+     */
+    public String resetArea(String areaName) {
+        if(!this.areaExists(areaName)) {
+            return "Die Area existiert nicht!";
+        }        
+        return AreaDataHandler.resetArea(this.getArea(areaName));
     }
 }

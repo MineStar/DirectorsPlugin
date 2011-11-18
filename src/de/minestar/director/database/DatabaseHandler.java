@@ -193,14 +193,12 @@ public class DatabaseHandler {
 
         try {
             ResultSet set = getAllAreas.executeQuery();
-            int ID;
             String areaName, worldName, areaOwner;
             int x1, z1, x2, z2;
             World world;
             Chunk chunk1, chunk2;
 
             while (set.next()) {
-                ID = set.getInt("Id");
                 areaName = set.getString("AreaName");
                 worldName = set.getString("AreaWorld");
                 areaOwner = set.getString("AreaOwner");
@@ -225,7 +223,7 @@ public class DatabaseHandler {
                 }
                 
                 // PUT IN MAP
-                map.put(areaName, new Area(ID, areaName, areaOwner, worldName, chunk1, chunk2));
+                map.put(areaName.toLowerCase(), new Area(areaName, areaOwner, worldName, chunk1, chunk2));
             }
         } catch (SQLException e) {
             Main.printToConsole("Error! Can't load areas from database!");

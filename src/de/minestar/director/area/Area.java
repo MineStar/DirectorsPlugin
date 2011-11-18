@@ -26,7 +26,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public class Area {
-    private int ID = -1;
     private String areaOwner = "";
     private String areaName = "";
     private String worldName = "";
@@ -37,9 +36,8 @@ public class Area {
     // ///////////////////////////
     // CONSTRUCTOR
     // ///////////////////////////
-    public Area(int ID, String areaName, String areaOwner, String worldName, Chunk chunk1, Chunk chunk2) {
-        this.ID = ID;
-        this.areaName = areaName;
+    public Area(String areaName, String areaOwner, String worldName, Chunk chunk1, Chunk chunk2) {
+        this.areaName = areaName.toLowerCase();
         this.areaOwner = areaOwner;
         this.worldName = worldName;
         this.minChunk = new Point(Math.min(chunk1.getX(), chunk2.getX()), Math.min(chunk1.getZ(), chunk2.getZ()));
@@ -101,9 +99,5 @@ public class Area {
 
     public Rectangle getRectangle() {
         return this.rectangle;
-    }
-    
-    public int getID() {
-        return this.ID;
     }
 }

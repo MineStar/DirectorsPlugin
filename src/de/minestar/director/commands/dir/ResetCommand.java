@@ -20,7 +20,7 @@ package de.minestar.director.commands.dir;
 
 import org.bukkit.entity.Player;
 
-import de.minestar.director.area.AreaDataHandler;
+import de.minestar.director.Main;
 import de.minestar.director.commands.Command;
 
 public class ResetCommand extends Command {
@@ -37,12 +37,12 @@ public class ResetCommand extends Command {
             return;
         }
         String areaName = args[0];
-        if (AreaDataHandler.areaExists(areaName)) {
-            player.sendMessage("Ein Area mit dem Namen '" + areaName + "' existiert bereits!");
+        if (!Main.getAreaHandler().areaExists(areaName)) {
+            player.sendMessage("Ein Area mit dem Namen '" + areaName + "' existiert nicht!");
             return;
         }
-        // ToDo: Reset the area
-
+        // Reset the area
+        player.sendMessage(Main.getAreaHandler().resetArea(areaName));
     }
 
 }

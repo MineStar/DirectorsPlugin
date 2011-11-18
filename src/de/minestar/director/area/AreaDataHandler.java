@@ -28,8 +28,10 @@ import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
-public class AreaDataHandler {
+import de.minestar.director.Main;
 
+public class AreaDataHandler {    
+    
     public static String saveArea(String areaName, Chunk chunk1, Chunk chunk2) {
         // CHECK CHUNKS
         if (chunk1 == null || chunk2 == null)
@@ -73,6 +75,10 @@ public class AreaDataHandler {
         }
     }
 
+    public static String resetArea(Area area) {
+        return resetArea(area.getAreaName(), area.getWorldName(), area.getMinChunk(), area.getMaxChunk());
+    }
+    
     public static String resetArea(String areaName, String worldName, Point chunkPos1, Point chunkPos2) {
         // GET WORLD
         World world = Bukkit.getServer().getWorld(worldName);
@@ -115,7 +121,7 @@ public class AreaDataHandler {
             dir.mkdirs();
 
             // CHECK FILE EXISTS
-            if (!areaExists(areaName))
+            if (!Main.getAreaHandler().areaExists(areaName))
                 return "No Area named '" + areaName + "' defined!";
 
             // READ DATA FROM FILE
@@ -162,9 +168,5 @@ public class AreaDataHandler {
             e.printStackTrace();
             return "Error while loading File!";
         }
-    }
-
-    public static boolean areaExists(String name) {
-        return new File("plugins/DirectorsPlugin/Areas/" + name + ".dp").exists();
     }
 }
