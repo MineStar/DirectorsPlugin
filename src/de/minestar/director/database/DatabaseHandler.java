@@ -31,6 +31,7 @@ import org.bukkit.block.Block;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
+import de.minestar.director.listener.DirectorBlock;
 
 public class DatabaseHandler {
 
@@ -148,17 +149,17 @@ public class DatabaseHandler {
      *            The watched area name
      * @return True when it was succesfull.
      */
-    public boolean addBlockPlace(Block newBlock, Block currentBlock, String playerName, String areaName) {
+    public boolean addBlockPlace(DirectorBlock newBlock, DirectorBlock oldBlock, String playerName, String areaName) {
 
         try {
-            addBlockChange.setString(1, newBlock.getWorld().getName().toLowerCase());
+            addBlockChange.setString(1, newBlock.getWorldName().toLowerCase());
             addBlockChange.setInt(2, newBlock.getX());
             addBlockChange.setInt(3, newBlock.getY());
             addBlockChange.setInt(4, newBlock.getZ());
-            addBlockChange.setInt(5, newBlock.getTypeId());
-            addBlockChange.setInt(6, newBlock.getData());
-            addBlockChange.setInt(7, currentBlock.getTypeId());
-            addBlockChange.setInt(8, currentBlock.getData());
+            addBlockChange.setInt(5, newBlock.getID());
+            addBlockChange.setInt(6, newBlock.getSubID());
+            addBlockChange.setInt(7, oldBlock.getID());
+            addBlockChange.setInt(8, oldBlock.getSubID());
             addBlockChange.setString(9, playerName);
             addBlockChange.setString(10, "p");
             addBlockChange.setString(11, areaName);

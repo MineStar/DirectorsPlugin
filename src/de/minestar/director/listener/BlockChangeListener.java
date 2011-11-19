@@ -19,10 +19,12 @@
 package de.minestar.director.listener;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
@@ -81,7 +83,31 @@ public class BlockChangeListener extends BlockListener {
         if (!found)
             return;
 
-        if (!dbHandler.addBlockPlace(event.getBlockPlaced(), event.getBlock().getWorld().getBlockAt(event.getBlock().getLocation()), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
+        /**
+         * BEGIN - NASTY FIX FOR DOUBLESTEPS, DAMN BUKKIT!!!
+         */
+        ItemStack inHand = event.getPlayer().getItemInHand();
+        DirectorBlock newBlock = new DirectorBlock(event.getBlock());
+        DirectorBlock oldBlock = new DirectorBlock(newBlock.getX(), newBlock.getY(), newBlock.getZ(), event.getBlockReplacedState().getTypeId(), event.getBlockReplacedState().getRawData(), event.getBlockPlaced().getWorld().getName());
+        if (inHand.getTypeId() == Material.STEP.getId()) {
+            byte data = (byte) inHand.getDurability();
+            if (data != newBlock.getSubID()) {
+                // increase y with one, because it's another subid
+                newBlock.setY(newBlock.getY() + 1);
+                // update the subid with the one in the players hand
+                newBlock.setSubID(data);
+                // normally we need to check agains liquids here, but bukkit is
+                // not able to get the current blocktype/blockdata correctly...
+                // result is: we set the old blocktype to air
+                oldBlock.setID(0);
+                oldBlock.setSubID((byte) 0);
+            }
+        }
+        /**
+         * END - NASTY FIX FOR DOUBLESTEPS, DAMN BUKKIT!!!
+         */
+
+        if (!dbHandler.addBlockPlace(newBlock, oldBlock, event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
             event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
