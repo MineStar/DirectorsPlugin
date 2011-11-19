@@ -1,4 +1,4 @@
-name: DirectorsPlugin
+name: DirectorPlugin
 main: de.minestar.director.Main
 version: 0.1 Alpha
 commands:

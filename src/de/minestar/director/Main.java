@@ -20,13 +20,18 @@ package de.minestar.director;
 
 import java.io.File;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.block.BlockListener;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.bukkit.gemo.BukkitHTTP.HTTPCore;
+import com.bukkit.gemo.BukkitHTTP.HTTPPlugin;
 
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.commands.Command;
@@ -38,9 +43,13 @@ import de.minestar.director.commands.dir.SelectCommand;
 import de.minestar.director.database.DatabaseHandler;
 import de.minestar.director.listener.AreaDefineListener;
 import de.minestar.director.listener.BlockChangeListener;
+import de.minestar.director.web.DirectorHTTP;
 
 public class Main extends JavaPlugin {
 
+    // WEBSERVER
+    public static HTTPPlugin thisHTTP;
+    
     private static DatabaseHandler dbHandler;
     
     private static AreaHandler areaHandler;
@@ -89,6 +98,9 @@ public class Main extends JavaPlugin {
         // INIT COMMANDLIST , GeMoschen
         initCommandList();
         
+        // REGISTER HTTP-LISTENER , GeMoschen
+        registerHTTP();
+        
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
 
@@ -109,14 +121,14 @@ public class Main extends JavaPlugin {
 
         try {
 
-            File f = new File("plugins/DirectorsPlugin/");
+            File f = new File("plugins/DirectorPlugin/");
             f.mkdirs();
             f = new File(f.getAbsolutePath() + "/sqlconfig.yml");              
             YamlConfiguration sqlConfig = new YamlConfiguration();
             
             if (!f.exists()) {           
                 printToConsole("Can't find sql configuration!");
-                printToConsole("Create an empty configuration file at plugins/DirectorsPlugin/sqlconfig.yml");
+                printToConsole("Create an empty configuration file at plugins/DirectorPlugin/sqlconfig.yml");
                 f.createNewFile();
                 sqlConfig.set("host", "host");
                 sqlConfig.set("port", "port");
@@ -150,5 +162,21 @@ public class Main extends JavaPlugin {
     
     public static DatabaseHandler getDatabaseHandler() {
         return dbHandler;
+    }
+    
+    // REGISTER AT BukkitHTTP
+    public void registerHTTP() {
+        Plugin httpPlugin = Bukkit.getPluginManager().getPlugin("BukkitHTTP");
+        if (httpPlugin != null) {
+            if (!httpPlugin.isEnabled()) {
+                Bukkit.getPluginManager().enablePlugin(httpPlugin);
+            }
+            HTTPCore http = (HTTPCore) httpPlugin;
+            thisHTTP = new DirectorHTTP("director", "DirectorPlugin", "DirectorPlugin/web/", false);
+            thisHTTP.setOwn404Page(true);
+            http.registerPlugin(thisHTTP);
+        } else {
+            Main.printToConsole("BukkitHTTP not found!");
+        }
     }
 }
