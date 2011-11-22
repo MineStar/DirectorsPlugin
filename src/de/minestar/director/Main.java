@@ -30,6 +30,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.bukkit.gemo.BukkitHTTP.HTTPCore;
+import com.bukkit.gemo.BukkitHTTP.HTTPPlugin;
+
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.commands.Command;
 import de.minestar.director.commands.CommandList;
