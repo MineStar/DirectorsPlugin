@@ -21,19 +21,62 @@ package de.minestar.director.listener;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
+
+import de.minestar.director.Main;
+import de.minestar.director.area.Area;
+import de.minestar.director.database.DatabaseHandler;
 
 public class AreaDefineListener extends PlayerListener {
 
     private HashSet<String> inSelectMode = new HashSet<String>();
     private HashMap<String, Block[]> selection = new HashMap<String, Block[]>();
+    private DatabaseHandler dbHandler;
+
+    public AreaDefineListener(DatabaseHandler dbHandler) {
+        this.dbHandler = dbHandler;
+    }
 
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
+
+        // //////////////////////////////////////
+        // BEGIN : WORKAROUND FOR DOUBLESTEPS
+        if (event.hasBlock() && event.isBlockInHand()) {
+            boolean found = false;
+            Block block = event.getClickedBlock();
+            Area foundArea = null;
+            for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+                if (thisArea.isBlockInArea(block)) {
+                    found = true;
+                    foundArea = thisArea;
+                    break;
+                }
+            }
+            if (found) {
+                if (event.getPlayer().getItemInHand().getTypeId() == Material.STEP.getId()) {
+                    Block relative = event.getClickedBlock();
+                    if (event.getBlockFace() == BlockFace.UP && relative.getTypeId() == Material.STEP.getId() && relative.getData() == event.getPlayer().getItemInHand().getDurability()) {
+                        DirectorBlock oldBlock = new DirectorBlock(relative);
+                        DirectorBlock newBlock = new DirectorBlock(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ(), Material.DOUBLE_STEP.getId(), relative.getData(), relative.getWorld().getName());
+                        if (!dbHandler.addBlockPlace(newBlock, oldBlock, event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
+                            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+                            event.setCancelled(true);
+                        }
+                    }
+                }
+            }
+        }
+        // END : WORKAROUND FOR DOUBLESTEPS
+        // //////////////////////////////////////
+
         String playerName = event.getPlayer().getName().toLowerCase();
         // if player havn't used command "cselect" before
         if (!event.hasBlock() || !inSelectMode.contains(playerName))
@@ -54,7 +97,8 @@ public class AreaDefineListener extends PlayerListener {
     }
 
     /**
-     * @return Return true when player is NOW in selection mode(he wasn't it before!)
+     * @return Return true when player is NOW in selection mode(he wasn't it
+     *         before!)
      */
     public boolean switchSelectionMode(String playerName) {
         playerName = playerName.toLowerCase();

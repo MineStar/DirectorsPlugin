@@ -90,7 +90,7 @@ public class Main extends JavaPlugin {
         pm.registerEvent(Type.BLOCK_BREAK, bListener, Priority.Normal, this);
         pm.registerEvent(Type.BLOCK_PLACE, bListener, Priority.Normal, this);
 
-        adListener = new AreaDefineListener();
+        adListener = new AreaDefineListener(dbHandler);
         pm.registerEvent(Type.PLAYER_INTERACT, adListener, Priority.Normal, this);
 
         // INIT AREAHANDLER , GeMoschen
