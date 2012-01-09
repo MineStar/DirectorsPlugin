@@ -57,7 +57,6 @@ public class BlockChangeListener extends BlockListener {
                 break;
             }
         }
-
         if (!found)
             return;
 

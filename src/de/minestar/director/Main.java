@@ -51,6 +51,8 @@ public class Main extends JavaPlugin {
     // WEBSERVER
     public static HTTPPlugin thisHTTP;
 
+    private static Main instance;
+
     private static DatabaseHandler dbHandler;
 
     private static AreaHandler areaHandler;
@@ -65,6 +67,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        dbHandler.flushQueue();
         dbHandler.closeConnection();
         dbHandler = null;
         adListener = null;
@@ -92,6 +95,8 @@ public class Main extends JavaPlugin {
 
         adListener = new AreaDefineListener(dbHandler);
         pm.registerEvent(Type.PLAYER_INTERACT, adListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_BUCKET_FILL, adListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_BUCKET_EMPTY, adListener, Priority.Normal, this);
 
         // INIT AREAHANDLER , GeMoschen
         areaHandler = new AreaHandler(dbHandler);
@@ -102,7 +107,13 @@ public class Main extends JavaPlugin {
         // REGISTER HTTP-LISTENER , GeMoschen
         registerHTTP();
 
+        instance = this;
+
         printToConsole(getDescription().getVersion() + " is enabled!");
+    }
+
+    public static JavaPlugin getInstance() {
+        return instance;
     }
 
     private void initCommandList() {

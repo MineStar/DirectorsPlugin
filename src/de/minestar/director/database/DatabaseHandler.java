@@ -22,6 +22,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.bukkit.Bukkit;
@@ -32,14 +34,20 @@ import org.bukkit.block.Block;
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
 import de.minestar.director.listener.DirectorBlock;
+import de.minestar.director.threading.BatchRunnable;
 
 public class DatabaseHandler {
 
     private final DatabaseConnection conHandler;
 
     // PREPARED STATEMENTS
-    private PreparedStatement addBlockChange, getAllAreas, addArea;
+    private PreparedStatement getAllAreas, addArea, batch;
     // /PREPARED STATEMENTS
+
+    // THREADS
+    private BatchRunnable batchThread;
+
+    public List<QueuedBlock> queue = new LinkedList<QueuedBlock>();
 
     public DatabaseHandler(String host, int port, String database, String userName, String password) {
 
@@ -64,6 +72,7 @@ public class DatabaseHandler {
     private void init() throws Exception {
         checkTables();
         createStatements();
+        batchThread = new BatchRunnable(batch);
     }
 
     /**
@@ -122,19 +131,20 @@ public class DatabaseHandler {
 
         Connection con = conHandler.getConnection();
         //@formatter:off
-        addBlockChange = con.prepareStatement("INSERT INTO directorblockdata" +
-        		                              "(WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) " +
-        		                              "VALUES(?,?,?,?,?,?,?,?,NOW(),?,?,?)");
-        
+       
         getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ID asc");
         
         addArea = con.prepareStatement("INSERT INTO directorareadata" +
                                         "(AreaName, AreaWorld, Chunk1X, Chunk1Z, Chunk2X, Chunk2Z, AreaOwner) " +
                                         "VALUES(?, ?, ?, ?, ?, ?, ?)");
-        
+        StringBuilder sBuilder = new StringBuilder("INSERT INTO directorblockdata" +
+                "(WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) " +
+                "VALUES ");
+        for(int i = 0 ; i < 200 ; ++i)
+            sBuilder.append("(?,?,?,?,?,?,?,?,?,?,?,?),");
+        batch = con.prepareStatement(sBuilder.substring(0, sBuilder.length()-1) + ";");
         //@formatter:on
     }
-
     /**
      * Stores a block change to the database. This will appear when someone
      * broke the block or place another block at the air.
@@ -150,20 +160,14 @@ public class DatabaseHandler {
      * @return True when it was succesfull.
      */
     public boolean addBlockPlace(DirectorBlock newBlock, DirectorBlock oldBlock, String playerName, String areaName) {
-
         try {
-            addBlockChange.setString(1, newBlock.getWorldName().toLowerCase());
-            addBlockChange.setInt(2, newBlock.getX());
-            addBlockChange.setInt(3, newBlock.getY());
-            addBlockChange.setInt(4, newBlock.getZ());
-            addBlockChange.setInt(5, newBlock.getID());
-            addBlockChange.setInt(6, newBlock.getSubID());
-            addBlockChange.setInt(7, oldBlock.getID());
-            addBlockChange.setInt(8, oldBlock.getSubID());
-            addBlockChange.setString(9, playerName);
-            addBlockChange.setString(10, "p");
-            addBlockChange.setString(11, areaName);
-            return addBlockChange.executeUpdate() == 1;
+            queue.add(new QueuedBlock(newBlock, oldBlock, playerName, areaName));
+
+            if (queue.size() == 200) {
+                this.runQueue();
+            }
+
+            return true;
         } catch (Exception e) {
             Main.printToConsole("Error! Can't save a block change to database!");
             e.printStackTrace();
@@ -174,22 +178,66 @@ public class DatabaseHandler {
     public boolean addBlockBreak(Block oldBlock, String playerName, String areaName) {
 
         try {
-            addBlockChange.setString(1, oldBlock.getWorld().getName().toLowerCase());
-            addBlockChange.setInt(2, oldBlock.getX());
-            addBlockChange.setInt(3, oldBlock.getY());
-            addBlockChange.setInt(4, oldBlock.getZ());
-            addBlockChange.setInt(5, 0);
-            addBlockChange.setInt(6, 0);
-            addBlockChange.setInt(7, oldBlock.getTypeId());
-            addBlockChange.setInt(8, oldBlock.getData());
-            addBlockChange.setString(9, playerName);
-            addBlockChange.setString(10, "b");
-            addBlockChange.setString(11, areaName);
-            return addBlockChange.executeUpdate() == 1;
+            DirectorBlock oldDirBlock = new DirectorBlock(oldBlock);
+            DirectorBlock newBlock = new DirectorBlock(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ(), 0, (byte) 0, oldBlock.getWorld().getName());
+            QueuedBlock event = new QueuedBlock(newBlock, oldDirBlock, playerName, areaName);
+            event.setBroken();
+            queue.add(event);
+
+            if (queue.size() == 200) {
+                this.runQueue();
+            }
+
+            return true;
         } catch (Exception e) {
             Main.printToConsole("Error! Can't save a block break to database!");
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void runQueue() {
+        batchThread.copyList(queue);
+        queue.clear();
+        Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(Main.getInstance(), batchThread, 1);
+    }
+
+    public void flushQueue() {
+        if (queue.size() == 0)
+            return;
+
+        try {
+            StringBuilder sBuilder = new StringBuilder("INSERT INTO directorblockdata (WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) VALUES ");
+
+            for (int i = 0; i < queue.size(); ++i) {
+                sBuilder.append("(?,?,?,?,?,?,?,?,?,?,?,?),");
+            }
+            batch = conHandler.getConnection().prepareStatement(sBuilder.substring(0, sBuilder.length() - 1) + ";");
+            try {
+                int pos = 0;
+                for (QueuedBlock event : queue) {
+                    DirectorBlock oldBlock = event.getOldBlock();
+                    DirectorBlock newBlock = event.getNewBlock();
+                    batch.setString(pos + 1, oldBlock.getWorldName());
+                    batch.setInt(pos + 2, oldBlock.getX());
+                    batch.setInt(pos + 3, oldBlock.getY());
+                    batch.setInt(pos + 4, oldBlock.getZ());
+                    batch.setInt(pos + 5, newBlock.getID());
+                    batch.setInt(pos + 6, newBlock.getSubID());
+                    batch.setInt(pos + 7, oldBlock.getID());
+                    batch.setInt(pos + 8, oldBlock.getSubID());
+                    batch.setString(pos + 9, event.time);
+                    batch.setString(pos + 10, event.getPlayerName());
+                    batch.setString(pos + 11, event.getMode());
+                    batch.setString(pos + 12, event.getAreaName());
+                    pos += 12;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            batch.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -200,7 +248,7 @@ public class DatabaseHandler {
             addArea.setInt(3, newArea.getMinChunk().x);
             addArea.setInt(4, newArea.getMinChunk().y);
             addArea.setInt(5, newArea.getMaxChunk().x);
-            addArea.setInt(6, newArea.getMaxChunk().y);            
+            addArea.setInt(6, newArea.getMaxChunk().y);
             addArea.setString(7, newArea.getAreaOwner());
             return addArea.executeUpdate() == 1;
         } catch (Exception e) {

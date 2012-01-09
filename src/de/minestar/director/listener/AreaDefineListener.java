@@ -27,6 +27,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 
@@ -109,6 +111,59 @@ public class AreaDefineListener extends PlayerListener {
             return false;
     }
 
+    @Override
+    public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+        boolean found = false;
+        Block block = event.getBlockClicked();
+        Area foundArea = null;
+        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+            if (thisArea.isBlockInArea(block)) {
+                found = true;
+                foundArea = thisArea;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        DirectorBlock newBlock = new DirectorBlock(event.getBlockClicked().getRelative(event.getBlockFace()));
+        int id = Material.WATER.getId();
+        if (event.getPlayer().getItemInHand().getTypeId() == Material.LAVA_BUCKET.getId())
+            id = Material.LAVA.getId();
+
+        newBlock.setID(id);
+        newBlock.setSubID((byte) 8);
+        DirectorBlock oldBlock = new DirectorBlock(newBlock.getX(), newBlock.getY(), newBlock.getZ(), 0, (byte) 0, event.getBlockClicked().getWorld().getName());
+
+        if (!dbHandler.addBlockPlace(newBlock, oldBlock, event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
+            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+            event.setCancelled(true);
+        }
+    }
+
+    @Override
+    public void onPlayerBucketFill(PlayerBucketFillEvent event) {
+        boolean found = false;
+        Block block = event.getBlockClicked().getRelative(event.getBlockFace());
+        Area foundArea = null;
+        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+            if (thisArea.isBlockInArea(block)) {
+                found = true;
+                foundArea = thisArea;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        if (!dbHandler.addBlockBreak(event.getBlockClicked().getRelative(event.getBlockFace()), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
+            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+            event.setCancelled(true);
+        }
+    }
+
     public Chunk[] getCorners(String playerName) {
         playerName = playerName.toLowerCase();
         Block[] corners = selection.get(playerName);
@@ -117,4 +172,5 @@ public class AreaDefineListener extends PlayerListener {
         else
             return new Chunk[]{corners[0].getChunk(), corners[1].getChunk()};
     }
+
 }
