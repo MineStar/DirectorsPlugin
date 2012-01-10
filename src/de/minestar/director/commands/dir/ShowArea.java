@@ -41,10 +41,14 @@ public class ShowArea extends Command {
 
     private HashMap<String, LinkedList<int[]>> borders = new HashMap<String, LinkedList<int[]>>();
 
-    public ShowArea(String syntax, String arguments, String node, AreaHandler aHandler) {
+    private final File borderFolder;
+
+    public ShowArea(String syntax, String arguments, String node, AreaHandler aHandler, File dataFolder) {
         super(syntax, arguments, node);
         this.aHandler = aHandler;
         this.description = "Zeigt die Area mit einem GlowstoneRing an";
+        this.borderFolder = new File(dataFolder, "borders/");
+        borderFolder.mkdirs();
     }
 
     @Override
@@ -109,7 +113,8 @@ public class ShowArea extends Command {
     }
 
     private LinkedList<int[]> loadDataFromFile(String areaName) {
-        File f = new File("plugins/DirectorsPlugin/borders/" + areaName + ".data");
+
+        File f = new File(borderFolder, areaName + ".data");
         if (!f.exists())
             return null;
         try {
@@ -136,8 +141,9 @@ public class ShowArea extends Command {
     // store all data from the blocks in a file to prevent information loose
     // because
     private void saveDataToFile(String areaName, LinkedList<int[]> list) {
+        File f = new File(borderFolder, areaName + ".data");
         try {
-            BufferedWriter bWriter = new BufferedWriter(new FileWriter("plugins/DirectorsPlugin/borders/" + areaName + ".data"));
+            BufferedWriter bWriter = new BufferedWriter(new FileWriter(f));
             for (int[] data : list) {
                 bWriter.write(data[0] + "," + data[1]);
                 bWriter.newLine();

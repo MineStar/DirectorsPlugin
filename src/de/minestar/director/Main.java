@@ -33,6 +33,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.bukkit.gemo.BukkitHTTP.HTTPCore;
 import com.bukkit.gemo.BukkitHTTP.HTTPPlugin;
 
+import de.minestar.director.area.AreaDataHandler;
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.commands.Command;
 import de.minestar.director.commands.CommandList;
@@ -78,6 +79,10 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
+        File dataFolder = getDataFolder();
+        dataFolder.mkdirs();
+
         // when we don't have a connection to the database, the whole plugin
         // can't work
         if (!initDatabase()) {
@@ -98,11 +103,13 @@ public class Main extends JavaPlugin {
         pm.registerEvent(Type.PLAYER_BUCKET_FILL, adListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_BUCKET_EMPTY, adListener, Priority.Normal, this);
 
+        AreaDataHandler aDataHandler = new AreaDataHandler(dataFolder);
+
         // INIT AREAHANDLER , GeMoschen
-        areaHandler = new AreaHandler(dbHandler);
+        areaHandler = new AreaHandler(dbHandler, aDataHandler);
 
         // INIT COMMANDLIST , GeMoschen
-        initCommandList();
+        initCommandList(aDataHandler);
 
         // REGISTER HTTP-LISTENER , GeMoschen
         registerHTTP();
@@ -111,19 +118,18 @@ public class Main extends JavaPlugin {
 
         printToConsole(getDescription().getVersion() + " is enabled!");
     }
-
     public static JavaPlugin getInstance() {
         return instance;
     }
 
-    private void initCommandList() {
+    private void initCommandList(AreaDataHandler aDataHandler) {
         //@formatter:off
         Command[] commands = {
                 new DirCommand("/dir","","", new Command[] {
-                    new AreaSaveCommand("save","<Name>","directorsplugin.save",adListener),
+                    new AreaSaveCommand("save","<Name>","directorsplugin.save",adListener, aDataHandler),
                     new SelectCommand("select","","directorsplugin.select",adListener),
                     new ResetCommand("reset","<Name>","directorsplugin.reset"),
-                    new ShowArea("show","<AreaNamen>","directorsplugin.show",areaHandler)
+                    new ShowArea("show","<AreaNamen>","directorsplugin.show",areaHandler, getDataFolder())
             })
         };
         cmdList = new CommandList(commands);
@@ -133,15 +139,14 @@ public class Main extends JavaPlugin {
     private boolean initDatabase() {
 
         try {
-
-            File f = new File("plugins/DirectorPlugin/");
+            File f = getDataFolder();
             f.mkdirs();
-            f = new File(f.getAbsolutePath() + "/sqlconfig.yml");
+            f = new File(f, "sqlconfig.yml");
             YamlConfiguration sqlConfig = new YamlConfiguration();
 
             if (!f.exists()) {
                 printToConsole("Can't find sql configuration!");
-                printToConsole("Create an empty configuration file at plugins/DirectorPlugin/sqlconfig.yml");
+                printToConsole("Create an empty configuration file at plugins/DirectorsPlugin/sqlconfig.yml");
                 f.createNewFile();
                 sqlConfig.set("host", "host");
                 sqlConfig.set("port", "port");
@@ -185,7 +190,7 @@ public class Main extends JavaPlugin {
                 Bukkit.getPluginManager().enablePlugin(httpPlugin);
             }
             HTTPCore http = (HTTPCore) httpPlugin;
-            thisHTTP = new DirectorHTTP("director", "DirectorPlugin", "DirectorPlugin/web/", false);
+            thisHTTP = new DirectorHTTP("director", "DirectorsPlugin", "DirectorsPlugin/web/", false);
             thisHTTP.setOwn404Page(true);
             http.registerPlugin(thisHTTP);
         } else {

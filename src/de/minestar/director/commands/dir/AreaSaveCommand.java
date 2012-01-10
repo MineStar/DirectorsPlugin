@@ -30,11 +30,13 @@ import de.minestar.director.listener.AreaDefineListener;
 public class AreaSaveCommand extends Command {
 
     private AreaDefineListener adListener;
+    private AreaDataHandler aDataHandler;
 
-    public AreaSaveCommand(String syntax, String arguments, String node, AreaDefineListener adListener) {
+    public AreaSaveCommand(String syntax, String arguments, String node, AreaDefineListener adListener, AreaDataHandler aDataHandler) {
         super(syntax, arguments, node);
         this.adListener = adListener;
         this.description = "Erzeugt eine Area die von Director ueberwacht wird.";
+        this.aDataHandler = aDataHandler;
     }
 
     @Override
@@ -54,24 +56,24 @@ public class AreaSaveCommand extends Command {
             player.sendMessage("Du musst zwei Bloecke auswaehlen!");
             return;
         }
-        
+
         // CREATE AREA , GeMoschen
         Area newArea = new Area(areaName, player.getName(), selection[0].getWorld().getName(), selection[0], selection[1]);
 
-        // Check if an existing area is inside the new area        
-        for(Area otherArea :  Main.getAreaHandler().getAreas().values()) {
-            if(otherArea.intersectsArea(newArea)) {
+        // Check if an existing area is inside the new area
+        for (Area otherArea : Main.getAreaHandler().getAreas().values()) {
+            if (otherArea.intersectsArea(newArea)) {
                 player.sendMessage("Area '" + otherArea.getAreaName() + "' schneidet die neue Area!");
                 return;
             }
         }
-        
+
         // ADD AREA , GeMoschen
         Main.getAreaHandler().addArea(newArea);
         // SAVE AREA TO DB , GeMoschen
         Main.getDatabaseHandler().saveArea(newArea);
-        
+
         // SAVE AREA TO FILE AND SEND MESSAGE
-        player.sendMessage(AreaDataHandler.saveArea(newArea.getAreaName(), selection[0], selection[1]));
+        player.sendMessage(aDataHandler.saveArea(newArea.getAreaName(), selection[0], selection[1]));
     }
 }
