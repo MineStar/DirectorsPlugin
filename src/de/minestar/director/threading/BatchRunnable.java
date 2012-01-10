@@ -22,55 +22,50 @@ import java.sql.PreparedStatement;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import de.minestar.director.database.QueuedBlock;
 import de.minestar.director.listener.DirectorBlock;
 
 public class BatchRunnable implements Runnable {
 
-    LinkedList<QueuedBlock> queue = null;
+    private List<QueuedBlock> queue = new LinkedList<QueuedBlock>();
 
-    PreparedStatement batch = null;
+    private PreparedStatement batch;
 
     public BatchRunnable(PreparedStatement statement) {
-        this.queue = new LinkedList<QueuedBlock>();
-        this.updateStatement(statement);
-    }
-
-    @SuppressWarnings("unchecked")
-    public void copyList(List<QueuedBlock> list) {
-        queue = (LinkedList<QueuedBlock>) ((LinkedList<QueuedBlock>) list).clone();
-    }
-
-    public void updateStatement(PreparedStatement statement) {
         this.batch = statement;
+    }
+
+    public void copyList(List<QueuedBlock> list) {
+        queue = Lists.newLinkedList(list);
     }
 
     public void run() {
         this.runQueue();
-
     }
 
     private void runQueue() {
         try {
-            int pos = 0;
+            int pos = 1;
             for (QueuedBlock event : queue) {
                 DirectorBlock oldBlock = event.getOldBlock();
                 DirectorBlock newBlock = event.getNewBlock();
-                batch.setString(pos + 1, oldBlock.getWorldName());
-                batch.setInt(pos + 2, oldBlock.getX());
-                batch.setInt(pos + 3, oldBlock.getY());
-                batch.setInt(pos + 4, oldBlock.getZ());
-                batch.setInt(pos + 5, newBlock.getID());
-                batch.setInt(pos + 6, newBlock.getSubID());
-                batch.setInt(pos + 7, oldBlock.getID());
-                batch.setInt(pos + 8, oldBlock.getSubID());
-                batch.setString(pos + 9, event.time);
-                batch.setString(pos + 10, event.getPlayerName());
-                batch.setString(pos + 11, event.getMode());
-                batch.setString(pos + 12, event.getAreaName());
-                pos += 12;
+                batch.setString(pos++, oldBlock.getWorldName());
+                batch.setInt(pos++, oldBlock.getX());
+                batch.setInt(pos++, oldBlock.getY());
+                batch.setInt(pos++, oldBlock.getZ());
+                batch.setInt(pos++, newBlock.getID());
+                batch.setInt(pos++, newBlock.getSubID());
+                batch.setInt(pos++, oldBlock.getID());
+                batch.setInt(pos++, oldBlock.getSubID());
+                batch.setString(pos++, event.getTime());
+                batch.setString(pos++, event.getPlayerName());
+                batch.setString(pos++, event.getMode());
+                batch.setString(pos++, event.getAreaName());
             }
             batch.executeUpdate();
+            queue.clear();
         } catch (Exception e) {
             e.printStackTrace();
         }

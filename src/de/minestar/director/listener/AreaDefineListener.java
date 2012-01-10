@@ -89,10 +89,13 @@ public class AreaDefineListener extends PlayerListener {
         if (corners == null)
             corners = new Block[2];
 
-        if (event.getAction().equals(Action.LEFT_CLICK_BLOCK))
+        if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             corners[0] = event.getClickedBlock();
-        else if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+            event.getPlayer().sendMessage(ChatColor.GREEN + "1. Block selektiert!");
+        } else if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             corners[1] = event.getClickedBlock();
+            event.getPlayer().sendMessage(ChatColor.GREEN + "2. Block selektiert!");
+        }
 
         // store selections
         selection.put(playerName, corners);
