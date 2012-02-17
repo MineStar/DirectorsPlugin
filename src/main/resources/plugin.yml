@@ -1,5 +1,5 @@
 name: DirectorPlugin
-main: de.minestar.director.Main
+main: de.minestar.director.Core
 version: 0.1 Alpha
 commands:
   dir:

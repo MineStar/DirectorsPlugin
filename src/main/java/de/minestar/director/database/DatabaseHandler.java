@@ -50,7 +50,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
     private static final int QUEUE_BUFFER_SIZE = 100;
 
     // PREPARED STATEMENTS
-    private PreparedStatement getAllAreas, addArea, addBlockChanges;
+    private PreparedStatement getAllAreas, addArea, addBlockChanges, getAreaBlocks;
     // /PREPARED STATEMENTS
 
     // THREADS
@@ -86,6 +86,8 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
         getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ID asc");
 
         addArea = con.prepareStatement("INSERT INTO directorareadata" + "(AreaName, AreaWorld, Chunk1X, Chunk1Z, Chunk2X, Chunk2Z, AreaOwner) " + "VALUES(?, ?, ?, ?, ?, ?, ?)");
+
+        getAreaBlocks = con.prepareStatement("SELECT BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, EventType FROM directorblockdata WHERE AreaName = ?");
 
         // Create queue prepared statement
         // StringBuilder buffer = CharNumber of Head + 26 signs for each line
@@ -166,7 +168,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
             // 170 = Head, 150 estimated average length of one line
             StringBuilder sBuilder = new StringBuilder(170 + (queue.size() * 125));
             // Head of query
-            sBuilder.append("INSERT INTO directorblockdata (WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) VALUES ");
+            sBuilder.append("INSERT INTO directorblockdata (WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, PlayerName, EventType, AreaName) VALUES ");
 
             DirectorBlock oldBlock = null;
             DirectorBlock newBlock = null;
@@ -268,4 +270,15 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
 
         return map;
     }
+
+    public ResultSet getBlocks(String areaName) {
+        try {
+            getAreaBlocks.setString(1, areaName);
+            return getAreaBlocks.executeQuery();
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, Core.NAME, "Can't load blocks from the area '" + areaName + "'!");
+            return null;
+        }
+    }
+
 }
