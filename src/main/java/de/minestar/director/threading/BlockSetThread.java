@@ -52,11 +52,14 @@ public class BlockSetThread implements Runnable {
 
     private Block block = null;
 
+    private CraftWorld cWorld;
+
     private List<Block> setBlocks = new LinkedList<Block>();
 
     public BlockSetThread(World world, ResultSet blocks) {
         this.blocks = blocks;
         this.world = world;
+        this.cWorld = ((CraftWorld) world);
     }
 
     @Override
@@ -102,7 +105,7 @@ public class BlockSetThread implements Runnable {
                 nativeWorld.notify(x, y, z);
                 nativeWorld.applyPhysics(x, y, z, setBlock.getTypeId());
                 for (Player player : Bukkit.getOnlinePlayers())
-                    ((CraftPlayer) player).getHandle().netServerHandler.sendPacket(new Packet53BlockChange(x, y, z, ((CraftWorld) world).getHandle()));
+                    ((CraftPlayer) player).getHandle().netServerHandler.sendPacket(new Packet53BlockChange(x, y, z, cWorld.getHandle()));
             }
             setBlocks.clear();
         } catch (Exception e) {
