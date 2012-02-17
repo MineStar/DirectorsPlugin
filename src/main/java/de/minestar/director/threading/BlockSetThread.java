@@ -22,17 +22,21 @@ import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.server.Packet53BlockChange;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 
 import de.minestar.director.Core;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
 public class BlockSetThread implements Runnable {
 
-    private final static int BPT = 1;
+    private final static int BPT = 20;
 
     private ResultSet blocks;
     private World world;
@@ -85,9 +89,6 @@ public class BlockSetThread implements Runnable {
                 block = world.getBlockAt(x, y, z);
                 block.setTypeIdAndData(newId, newData, false);
                 setBlocks.add(block);
-                // BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId,
-                // OldBlockData, DateTime, EventType
-
             }
             net.minecraft.server.World nativeWorld = ((CraftWorld) world).getHandle();
             for (Block setBlock : setBlocks) {
@@ -96,7 +97,10 @@ public class BlockSetThread implements Runnable {
                 z = setBlock.getZ();
                 nativeWorld.notify(x, y, z);
                 nativeWorld.applyPhysics(x, y, z, setBlock.getTypeId());
+                for (Player player : Bukkit.getOnlinePlayers())
+                    ((CraftPlayer) player).getHandle().netServerHandler.sendPacket(new Packet53BlockChange(x, y, z, ((CraftWorld) world).getHandle()));
             }
+            setBlocks.clear();
         } catch (Exception e) {
             ConsoleUtils.printException(e, Core.NAME, "Can't read ResultSet!");
         }

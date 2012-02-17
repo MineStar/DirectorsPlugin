@@ -53,11 +53,13 @@ public class StartCommand extends AbstractCommand {
             return;
         }
 
+        PlayerUtils.sendInfo(player, pluginName, "Lade Datenbankdaten!");
         ResultSet rs = dbHandler.getBlocks(area.getAreaName());
         if (rs == null) {
             PlayerUtils.sendError(player, pluginName, "Fehler beim Laden der Blöcke!");
             return;
         }
+        PlayerUtils.sendSuccess(player, pluginName, "Fertig!");
         World world = Bukkit.getWorld(area.getWorldName());
         if (world == null) {
             PlayerUtils.sendError(player, pluginName, "Welt '" + area.getWorldName() + "' wurde nicht gefunden!");
@@ -65,7 +67,9 @@ public class StartCommand extends AbstractCommand {
         }
 
         BlockSetThread thread = new BlockSetThread(world, rs);
-        int taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(Core.getInstance(), thread, 20);
+        int taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.getInstance(), thread, 20, 1);
         thread.setID(taskID);
+
+        PlayerUtils.sendSuccess(player, pluginName, "Beginne mit der Magie...");
     }
 }
