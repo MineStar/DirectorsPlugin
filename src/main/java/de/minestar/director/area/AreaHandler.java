@@ -201,7 +201,7 @@ public class AreaHandler {
             dir.mkdirs();
 
             // CHECK FILE EXISTS
-            if (areaExists(areaName))
+            if (!areaExists(areaName))
                 return "No Area named '" + areaName + "' defined!";
 
             // READ DATA FROM FILE
