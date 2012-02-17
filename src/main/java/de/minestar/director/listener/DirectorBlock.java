@@ -34,7 +34,7 @@ public class DirectorBlock {
         this.SubID = SubID;
         this.worldName = worldName;
     }
-    
+
     public DirectorBlock(Block block) {
         this.x = block.getX();
         this.y = block.getY();
@@ -48,10 +48,6 @@ public class DirectorBlock {
         return x;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
     public int getY() {
         return y;
     }
@@ -62,10 +58,6 @@ public class DirectorBlock {
 
     public int getZ() {
         return z;
-    }
-
-    public void setZ(int z) {
-        this.z = z;
     }
 
     public int getID() {
@@ -87,8 +79,4 @@ public class DirectorBlock {
     public String getWorldName() {
         return worldName;
     }
-
-    public void setWorldName(String worldName) {
-        this.worldName = worldName;
-    }      
 }

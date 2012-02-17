@@ -20,15 +20,17 @@ package de.minestar.director.commands.dir;
 
 import org.bukkit.entity.Player;
 
-import de.minestar.director.commands.Command;
+import de.minestar.director.Main;
 import de.minestar.director.listener.AreaDefineListener;
+import de.minestar.minestarlibrary.commands.AbstractCommand;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
-public class SelectCommand extends Command {
+public class SelectCommand extends AbstractCommand {
 
     private AreaDefineListener adListener;
 
     public SelectCommand(String syntax, String arguments, String node, AreaDefineListener adListener) {
-        super(syntax, arguments, node);
+        super(Main.NAME, syntax, arguments, node);
         this.adListener = adListener;
         this.description = "Aktiviert den AreaSelektion Modus.";
     }
@@ -36,9 +38,8 @@ public class SelectCommand extends Command {
     @Override
     public void execute(String[] args, Player player) {
         if (adListener.switchSelectionMode(player.getName()))
-            player.sendMessage("Du bist nun im Selektionsmodus fuer Director!");
+            PlayerUtils.sendSuccess(player, pluginName, "Du bist nun im Selektionsmodus");
         else
-            player.sendMessage("Du bist nicht mehr im Selektionsmodus fuer Director!");
+            PlayerUtils.sendSuccess(player, pluginName, "Du bist nicht mehr im Selektionsmodus");
     }
-
 }

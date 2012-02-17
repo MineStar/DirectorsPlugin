@@ -21,28 +21,29 @@ package de.minestar.director.commands.dir;
 import org.bukkit.entity.Player;
 
 import de.minestar.director.Main;
-import de.minestar.director.commands.Command;
+import de.minestar.director.area.AreaHandler;
+import de.minestar.minestarlibrary.commands.AbstractCommand;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
-public class ResetCommand extends Command {
+public class ResetCommand extends AbstractCommand {
 
-    public ResetCommand(String syntax, String arguments, String node) {
-        super(syntax, arguments, node);
+    private AreaHandler aHandler;
+
+    public ResetCommand(String syntax, String arguments, String node, AreaHandler aHandler) {
+        super(Main.NAME, syntax, arguments, node);
+        this.aHandler = aHandler;
         this.description = "Resettet die Area";
     }
 
     @Override
     public void execute(String[] args, Player player) {
-        if (args.length == 0) {
-            player.sendMessage("Du musst einen Namen angegeben!");
-            return;
-        }
+
         String areaName = args[0];
-        if (!Main.getAreaHandler().areaExists(areaName)) {
-            player.sendMessage("Ein Area mit dem Namen '" + areaName + "' existiert nicht!");
+        if (!aHandler.areaExists(areaName)) {
+            PlayerUtils.sendError(player, pluginName, "Eine Area mit dem Namen '" + areaName + "' existiert nicht!");
             return;
         }
         // Reset the area
-        player.sendMessage(Main.getAreaHandler().resetArea(areaName));
+        PlayerUtils.sendSuccess(player, pluginName, aHandler.resetArea(areaName));
     }
-
 }

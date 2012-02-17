@@ -21,11 +21,11 @@ package de.minestar.director.listener;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -35,20 +35,30 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
+import de.minestar.director.area.AreaHandler;
 import de.minestar.director.database.DatabaseHandler;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
 public class AreaDefineListener implements Listener {
 
     private HashSet<String> inSelectMode = new HashSet<String>();
     private HashMap<String, Block[]> selection = new HashMap<String, Block[]>();
     private DatabaseHandler dbHandler;
+    private AreaHandler aHandler;
 
-    public AreaDefineListener(DatabaseHandler dbHandler) {
+    public AreaDefineListener(DatabaseHandler dbHandler, AreaHandler aHandler) {
         this.dbHandler = dbHandler;
+        this.aHandler = aHandler;
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+
+        Player player = event.getPlayer();
+        String playerName = player.getName().toLowerCase();
+        // if player havn't used command "cselect" before
+        if (!event.hasBlock() || !inSelectMode.contains(playerName))
+            return;
 
         // //////////////////////////////////////
         // BEGIN : WORKAROUND FOR DOUBLESTEPS
@@ -56,7 +66,7 @@ public class AreaDefineListener implements Listener {
             boolean found = false;
             Block block = event.getClickedBlock();
             Area foundArea = null;
-            for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+            for (Area thisArea : aHandler.getAreas().values()) {
                 if (thisArea.isBlockInArea(block)) {
                     found = true;
                     foundArea = thisArea;
@@ -64,13 +74,13 @@ public class AreaDefineListener implements Listener {
                 }
             }
             if (found) {
-                if (event.getPlayer().getItemInHand().getTypeId() == Material.STEP.getId()) {
+                if (player.getItemInHand().getTypeId() == Material.STEP.getId()) {
                     Block relative = event.getClickedBlock();
-                    if (event.getBlockFace() == BlockFace.UP && relative.getTypeId() == Material.STEP.getId() && relative.getData() == event.getPlayer().getItemInHand().getDurability()) {
+                    if (event.getBlockFace() == BlockFace.UP && relative.getTypeId() == Material.STEP.getId() && relative.getData() == player.getItemInHand().getDurability()) {
                         DirectorBlock oldBlock = new DirectorBlock(relative);
                         DirectorBlock newBlock = new DirectorBlock(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ(), Material.DOUBLE_STEP.getId(), relative.getData(), relative.getWorld().getName());
-                        if (!dbHandler.addBlockPlace(newBlock, oldBlock, event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
-                            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+                        if (!dbHandler.addBlockPlace(newBlock, oldBlock, player.getName().toLowerCase(), foundArea.getAreaName())) {
+                            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
                             event.setCancelled(true);
                         }
                     }
@@ -80,11 +90,6 @@ public class AreaDefineListener implements Listener {
         // END : WORKAROUND FOR DOUBLESTEPS
         // //////////////////////////////////////
 
-        String playerName = event.getPlayer().getName().toLowerCase();
-        // if player havn't used command "cselect" before
-        if (!event.hasBlock() || !inSelectMode.contains(playerName))
-            return;
-
         // get selections
         Block[] corners = selection.get(playerName);
         if (corners == null)
@@ -92,10 +97,10 @@ public class AreaDefineListener implements Listener {
 
         if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             corners[0] = event.getClickedBlock();
-            event.getPlayer().sendMessage(ChatColor.GREEN + "1. Block selektiert!");
+            PlayerUtils.sendSuccess(player, Main.NAME, "1. Block selektiert!");
         } else if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             corners[1] = event.getClickedBlock();
-            event.getPlayer().sendMessage(ChatColor.GREEN + "2. Block selektiert!");
+            PlayerUtils.sendSuccess(player, Main.NAME, "2. Block selektiert!");
         }
 
         // store selections
@@ -120,7 +125,7 @@ public class AreaDefineListener implements Listener {
         boolean found = false;
         Block block = event.getBlockClicked();
         Area foundArea = null;
-        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+        for (Area thisArea : aHandler.getAreas().values()) {
             if (thisArea.isBlockInArea(block)) {
                 found = true;
                 foundArea = thisArea;
@@ -131,17 +136,18 @@ public class AreaDefineListener implements Listener {
         if (!found)
             return;
 
+        Player player = event.getPlayer();
         DirectorBlock newBlock = new DirectorBlock(event.getBlockClicked().getRelative(event.getBlockFace()));
         int id = Material.WATER.getId();
-        if (event.getPlayer().getItemInHand().getTypeId() == Material.LAVA_BUCKET.getId())
+        if (player.getItemInHand().getTypeId() == Material.LAVA_BUCKET.getId())
             id = Material.LAVA.getId();
 
         newBlock.setID(id);
         newBlock.setSubID((byte) 8);
         DirectorBlock oldBlock = new DirectorBlock(newBlock.getX(), newBlock.getY(), newBlock.getZ(), 0, (byte) 0, event.getBlockClicked().getWorld().getName());
 
-        if (!dbHandler.addBlockPlace(newBlock, oldBlock, event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
-            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+        if (!dbHandler.addBlockPlace(newBlock, oldBlock, player.getName().toLowerCase(), foundArea.getAreaName())) {
+            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }
@@ -151,7 +157,7 @@ public class AreaDefineListener implements Listener {
         boolean found = false;
         Block block = event.getBlockClicked().getRelative(event.getBlockFace());
         Area foundArea = null;
-        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+        for (Area thisArea : aHandler.getAreas().values()) {
             if (thisArea.isBlockInArea(block)) {
                 found = true;
                 foundArea = thisArea;
@@ -162,8 +168,9 @@ public class AreaDefineListener implements Listener {
         if (!found)
             return;
 
-        if (!dbHandler.addBlockBreak(event.getBlockClicked().getRelative(event.getBlockFace()), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
-            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+        Player player = event.getPlayer();
+        if (!dbHandler.addBlockBreak(event.getBlockClicked().getRelative(event.getBlockFace()), player.getName().toLowerCase(), foundArea.getAreaName())) {
+            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }

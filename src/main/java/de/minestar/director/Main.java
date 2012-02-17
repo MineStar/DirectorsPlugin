@@ -21,8 +21,8 @@ package de.minestar.director;
 import java.io.File;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,10 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.bukkit.gemo.BukkitHTTP.HTTPCore;
 import com.bukkit.gemo.BukkitHTTP.HTTPPlugin;
 
-import de.minestar.director.area.AreaDataHandler;
 import de.minestar.director.area.AreaHandler;
-import de.minestar.director.commands.Command;
-import de.minestar.director.commands.CommandList;
 import de.minestar.director.commands.dir.AreaSaveCommand;
 import de.minestar.director.commands.dir.DirCommand;
 import de.minestar.director.commands.dir.ResetCommand;
@@ -43,25 +40,25 @@ import de.minestar.director.database.DatabaseHandler;
 import de.minestar.director.listener.AreaDefineListener;
 import de.minestar.director.listener.BlockChangeListener;
 import de.minestar.director.web.DirectorHTTP;
+import de.minestar.minestarlibrary.commands.CommandList;
+import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
 public class Main extends JavaPlugin {
+
+    public final static String NAME = "Director";
 
     // WEBSERVER
     public static HTTPPlugin thisHTTP;
 
     private static Main instance;
 
-    private static DatabaseHandler dbHandler;
+    private DatabaseHandler dbHandler;
 
-    private static AreaHandler areaHandler;
+    private AreaHandler areaHandler;
 
     private AreaDefineListener adListener;
 
     private CommandList cmdList;
-
-    public static void printToConsole(String msg) {
-        System.out.println("[ DirectorsPlugin ] : " + msg);
-    }
 
     @Override
     public void onDisable() {
@@ -71,7 +68,7 @@ public class Main extends JavaPlugin {
         adListener = null;
         cmdList = null;
 
-        printToConsole("Disabled!");
+        ConsoleUtils.printInfo(NAME, "Disabled!");
     }
 
     @Override
@@ -80,112 +77,75 @@ public class Main extends JavaPlugin {
         File dataFolder = getDataFolder();
         dataFolder.mkdirs();
 
+        dbHandler = new DatabaseHandler(NAME, dataFolder);
         // when we don't have a connection to the database, the whole plugin
         // can't work
-        if (!initDatabase()) {
-            printToConsole("------------------------------------------");
-            printToConsole("- COULD NOT CONNECT TO DIRECTOR DATABASE -");
-            printToConsole("------------------------------------------");
+        if (!dbHandler.hasConnection()) {
+            ConsoleUtils.printError(NAME, "------------------------------------------");
+            ConsoleUtils.printError(NAME, "- COULD NOT CONNECT TO DIRECTOR DATABASE -");
+            ConsoleUtils.printError(NAME, "------------------------------------------");
             return;
         }
 
+        areaHandler = new AreaHandler(dbHandler, dataFolder);
         // Register event listener
         PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new BlockChangeListener(dbHandler), this);
-        pm.registerEvents(new AreaDefineListener(dbHandler), this);
 
-        AreaDataHandler aDataHandler = new AreaDataHandler(dataFolder);
+        pm.registerEvents(new BlockChangeListener(dbHandler, areaHandler), this);
+        pm.registerEvents(new AreaDefineListener(dbHandler, areaHandler), this);
 
-        // INIT AREAHANDLER , GeMoschen
-        areaHandler = new AreaHandler(dbHandler, aDataHandler);
+        // INIT AREAHANDLER
 
-        // INIT COMMANDLIST , GeMoschen
-        initCommandList(aDataHandler);
+        // INIT COMMANDLIST
+        initCommandList();
 
-        // REGISTER HTTP-LISTENER , GeMoschen
+        // REGISTER HTTP-LISTENER
         registerHTTP();
 
         instance = this;
 
-        printToConsole(getDescription().getVersion() + " is enabled!");
+        ConsoleUtils.printInfo(NAME, getDescription().getVersion() + " is enabled!");
     }
+
     public static JavaPlugin getInstance() {
         return instance;
     }
 
-    private void initCommandList(AreaDataHandler aDataHandler) {
+    private void initCommandList() {
         //@formatter:off
-        Command[] commands = {
-                new DirCommand("/dir","","", new Command[] {
-                    new AreaSaveCommand("save","<Name>","directorsplugin.save",adListener, aDataHandler),
-                    new SelectCommand("select","","directorsplugin.select",adListener),
-                    new ResetCommand("reset","<Name>","directorsplugin.reset"),
-                    new ShowArea("show","<AreaNamen>","directorsplugin.show",areaHandler, getDataFolder())
-            })
-        };
-        cmdList = new CommandList(commands);
+        cmdList = new CommandList(NAME,
+
+                new DirCommand  ("/dir","","",
+                    new AreaSaveCommand ("save",    "<Name>","directorsplugin.save",adListener, dbHandler, areaHandler),
+                    new SelectCommand   ("select",  "","directorsplugin.select", adListener),
+                    new ResetCommand    ("reset",   "<Name>","directorsplugin.reset", areaHandler),
+                    new ShowArea        ("show",    "<AreaName>","directorsplugin.show", areaHandler, getDataFolder())
+
+            )
+        );
         //@formatter:on
     }
 
-    private boolean initDatabase() {
-
-        try {
-            File f = getDataFolder();
-            f.mkdirs();
-            f = new File(f, "sqlconfig.yml");
-            YamlConfiguration sqlConfig = new YamlConfiguration();
-
-            if (!f.exists()) {
-                printToConsole("Can't find sql configuration!");
-                printToConsole("Create an empty configuration file at plugins/DirectorsPlugin/sqlconfig.yml");
-                f.createNewFile();
-                sqlConfig.set("host", "host");
-                sqlConfig.set("port", "port");
-                sqlConfig.set("database", "database");
-                sqlConfig.set("username", "userName");
-                sqlConfig.set("password", "passwort");
-                sqlConfig.save(f);
-                return false;
-            }
-
-            sqlConfig = new YamlConfiguration();
-            sqlConfig.load(f);
-            dbHandler = new DatabaseHandler(sqlConfig.getString("host"), sqlConfig.getInt("port"), sqlConfig.getString("database"), sqlConfig.getString("username"), sqlConfig.getString("password"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
-
     @Override
-    public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         cmdList.handleCommand(sender, label, args);
         return true;
     }
 
-    public static AreaHandler getAreaHandler() {
-        return areaHandler;
-    }
-
-    public static DatabaseHandler getDatabaseHandler() {
-        return dbHandler;
-    }
-
     // REGISTER AT BukkitHTTP
     public void registerHTTP() {
+
         Plugin httpPlugin = Bukkit.getPluginManager().getPlugin("BukkitHTTP");
         if (httpPlugin != null) {
-            if (!httpPlugin.isEnabled()) {
+
+            if (!httpPlugin.isEnabled())
                 Bukkit.getPluginManager().enablePlugin(httpPlugin);
-            }
+
             HTTPCore http = (HTTPCore) httpPlugin;
             thisHTTP = new DirectorHTTP("director", "DirectorsPlugin", "DirectorsPlugin/web/", false);
             thisHTTP.setOwn404Page(true);
             http.registerPlugin(thisHTTP);
-        } else {
-            Main.printToConsole("BukkitHTTP not found!");
-        }
+        } else
+            ConsoleUtils.printError(NAME, "BukkitHTTP not found!");
     }
 }

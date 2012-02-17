@@ -18,9 +18,9 @@
 
 package de.minestar.director.listener;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -29,7 +29,9 @@ import org.bukkit.inventory.ItemStack;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
+import de.minestar.director.area.AreaHandler;
 import de.minestar.director.database.DatabaseHandler;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
 /**
  * Used to register all block changes and store them in the database, when they
@@ -41,9 +43,11 @@ import de.minestar.director.database.DatabaseHandler;
 public class BlockChangeListener implements Listener {
 
     private final DatabaseHandler dbHandler;
+    private AreaHandler aHandler;
 
-    public BlockChangeListener(DatabaseHandler dbHandler) {
+    public BlockChangeListener(DatabaseHandler dbHandler, AreaHandler aHandler) {
         this.dbHandler = dbHandler;
+        this.aHandler = aHandler;
     }
 
     @EventHandler
@@ -51,7 +55,7 @@ public class BlockChangeListener implements Listener {
         boolean found = false;
         Block block = event.getBlock();
         Area foundArea = null;
-        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+        for (Area thisArea : aHandler.getAreas().values()) {
             if (thisArea.isBlockInArea(block)) {
                 found = true;
                 foundArea = thisArea;
@@ -61,8 +65,9 @@ public class BlockChangeListener implements Listener {
         if (!found)
             return;
 
-        if (!dbHandler.addBlockBreak(event.getBlock(), event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
-            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+        Player player = event.getPlayer();
+        if (!dbHandler.addBlockBreak(event.getBlock(), player.getName().toLowerCase(), foundArea.getAreaName())) {
+            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }
@@ -72,7 +77,7 @@ public class BlockChangeListener implements Listener {
         boolean found = false;
         Block block = event.getBlock();
         Area foundArea = null;
-        for (Area thisArea : Main.getAreaHandler().getAreas().values()) {
+        for (Area thisArea : aHandler.getAreas().values()) {
             if (thisArea.isBlockInArea(block)) {
                 found = true;
                 foundArea = thisArea;
@@ -83,10 +88,12 @@ public class BlockChangeListener implements Listener {
         if (!found)
             return;
 
+        Player player = event.getPlayer();
+
         /**
          * BEGIN - NASTY FIX FOR DOUBLESTEPS, DAMN BUKKIT!!!
          */
-        ItemStack inHand = event.getPlayer().getItemInHand();
+        ItemStack inHand = player.getItemInHand();
         DirectorBlock newBlock = new DirectorBlock(event.getBlock());
         DirectorBlock oldBlock = new DirectorBlock(newBlock.getX(), newBlock.getY(), newBlock.getZ(), event.getBlockReplacedState().getTypeId(), event.getBlockReplacedState().getRawData(), event.getBlockPlaced().getWorld().getName());
         if (inHand.getTypeId() == Material.STEP.getId()) {
@@ -107,8 +114,8 @@ public class BlockChangeListener implements Listener {
          * END - NASTY FIX FOR DOUBLESTEPS, DAMN BUKKIT!!!
          */
 
-        if (!dbHandler.addBlockPlace(newBlock, oldBlock, event.getPlayer().getName().toLowerCase(), foundArea.getAreaName())) {
-            event.getPlayer().sendMessage(ChatColor.RED + "Fehler beim Speichern der Änderung!");
+        if (!dbHandler.addBlockPlace(newBlock, oldBlock, player.getName().toLowerCase(), foundArea.getAreaName())) {
+            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }

@@ -24,8 +24,10 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
+import de.minestar.director.Main;
 import de.minestar.director.database.QueuedBlock;
 import de.minestar.director.listener.DirectorBlock;
+import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
 public class BatchRunnable implements Runnable {
 
@@ -67,7 +69,7 @@ public class BatchRunnable implements Runnable {
             batch.executeUpdate();
             queue.clear();
         } catch (Exception e) {
-            e.printStackTrace();
+            ConsoleUtils.printException(e, Main.NAME, "Can't store the queued blocks!");
         }
     }
 }

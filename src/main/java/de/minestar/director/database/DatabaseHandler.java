@@ -18,6 +18,7 @@
 
 package de.minestar.director.database;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,18 +32,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
 import de.minestar.director.listener.DirectorBlock;
 import de.minestar.director.threading.BatchRunnable;
+import de.minestar.minestarlibrary.database.AbstractDatabaseHandler;
+import de.minestar.minestarlibrary.database.DatabaseConnection;
+import de.minestar.minestarlibrary.database.DatabaseType;
+import de.minestar.minestarlibrary.database.DatabaseUtils;
+import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
-public class DatabaseHandler {
+public class DatabaseHandler extends AbstractDatabaseHandler {
 
     // How many BlockChanges are queued before stored in database
-    private static final int QUEUE_BUFFER_SIZE = 5;
-
-    private final DatabaseConnection conHandler;
+    private static final int QUEUE_BUFFER_SIZE = 100;
 
     // PREPARED STATEMENTS
     private PreparedStatement getAllAreas, addArea, addBlockChanges;
@@ -53,104 +58,44 @@ public class DatabaseHandler {
 
     public List<QueuedBlock> queue = new LinkedList<QueuedBlock>();
 
-    public DatabaseHandler(String host, int port, String database, String userName, String password) {
-
-        conHandler = new DatabaseConnection(host, port, database, userName, password);
-
-        // Delete login information
-        host = null;
-        port = 0;
-        database = null;
-        userName = null;
-        password = null;
-        System.gc();
-
-        try {
-            init();
-        } catch (Exception e) {
-            Main.printToConsole("ERROR! Can't init databasehandler!");
-            e.printStackTrace();
-        }
-    }
-
-    private void init() throws Exception {
-        checkTables();
-        createStatements();
+    public DatabaseHandler(String pluginName, File dataFolder) {
+        super(pluginName, dataFolder);
         batchThread = new BatchRunnable(addBlockChanges);
     }
 
-    /**
-     * Check if the tables are existing and if not, they will be created here.
-     * Place all logic concerning tables here!
-     * 
-     * @throws Exception
-     */
-    private void checkTables() throws Exception {
-        Connection con = conHandler.getConnection();
-        // @formatter:off
-        con.createStatement().execute(
-                "CREATE TABLE IF NOT EXISTS `directorblockdata` ("
-                        + "`Id` int(11) NOT NULL AUTO_INCREMENT,"
-                        + "`WorldName` varchar(255) DEFAULT NULL,"
-                        + "`BlockX` int(11) DEFAULT NULL,"
-                        + "`BlockY` int(11) DEFAULT NULL,"
-                        + "`BlockZ` int(11) DEFAULT NULL,"
-                        + "`NewBlockId` int(11) DEFAULT NULL,"
-                        + "`NewBlockData` int(11) DEFAULT NULL,"
-                        + "`OldBlockId` int(11) DEFAULT NULL,"
-                        + "`OldBlockData` int(11) DEFAULT NULL,"
-                        + "`DateTime` datetime DEFAULT NULL,"
-                        + "`PlayerName` varchar(255) DEFAULT NULL,"
-                        + "`EventType` char(1) DEFAULT NULL,"
-                        + "`AreaName` varchar(255) DEFAULT NULL,"
-                        + " PRIMARY KEY (`Id`)"
-                        + ") ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+    @Override
+    protected DatabaseConnection createConnection(String pluginName, File dataFolder) throws Exception {
+        File configFile = new File(dataFolder, "sqlConfig.yml");
+        if (!configFile.exists()) {
+            DatabaseUtils.createDatabaseConfig(DatabaseType.MySQL, configFile, pluginName);
+            return null;
+        }
+        YamlConfiguration config = new YamlConfiguration();
+        config.load(configFile);
 
-        con.createStatement().execute(
-                "CREATE TABLE IF NOT EXISTS `directorareadata` ("
-                        + "`Id` int(11) NOT NULL AUTO_INCREMENT,"
-                        + "`AreaName` varchar(255) DEFAULT NULL,"
-                        + "`AreaWorld` varchar(255) DEFAULT NULL,"
-                        + "`Chunk1X` int(11) DEFAULT NULL,"
-                        + "`Chunk1Z` int(11) DEFAULT NULL,"
-                        + "`Chunk2X` int(11) DEFAULT NULL,"
-                        + "`Chunk2Z` int(11) DEFAULT NULL,"
-                        + "`AreaOwner` varchar(255) DEFAULT NULL,"
-                        + " PRIMARY KEY (`Id`)"
-                        + ") ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
-        // @formatter:on
+        return new DatabaseConnection(pluginName, config.getString("Host"), config.getString("Port"), config.getString("Database"), config.getString("User"), config.getString("Password"));
     }
 
-    public void closeConnection() {
-        conHandler.closeConnection();
+    @Override
+    protected void createStructure(String pluginName, Connection con) throws Exception {
+        DatabaseUtils.createStructure(getClass().getResourceAsStream("/structure.sql"), con, pluginName);
     }
 
-    /**
-     * Initiate all prepared statements they were needed often by the plugin.
-     * Put here the sql statement logic
-     * 
-     * @throws Exception
-     */
-    private void createStatements() throws Exception {
-
-        Connection con = conHandler.getConnection();
-        //@formatter:off
-       
+    @Override
+    protected void createStatements(String pluginName, Connection con) throws Exception {
         getAllAreas = con.prepareStatement("SELECT * FROM directorareadata ORDER BY ID asc");
-        
-        addArea = con.prepareStatement("INSERT INTO directorareadata" +
-                                        "(AreaName, AreaWorld, Chunk1X, Chunk1Z, Chunk2X, Chunk2Z, AreaOwner) " +
-                                        "VALUES(?, ?, ?, ?, ?, ?, ?)");
-        
+
+        addArea = con.prepareStatement("INSERT INTO directorareadata" + "(AreaName, AreaWorld, Chunk1X, Chunk1Z, Chunk2X, Chunk2Z, AreaOwner) " + "VALUES(?, ?, ?, ?, ?, ?, ?)");
+
         // Create queue prepared statement
         // StringBuilder buffer = CharNumber of Head + 26 signs for each line
         StringBuilder sBuilder = new StringBuilder(170 + (QUEUE_BUFFER_SIZE * 26));
         sBuilder.append("INSERT INTO directorblockdata (WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) VALUES ");
-        
-        for ( int i = 0 ; i < QUEUE_BUFFER_SIZE ; ++i)
+
+        for (int i = 0; i < QUEUE_BUFFER_SIZE; ++i)
             sBuilder.append("(?,?,?,?,?,?,?,?,?,?,?,?),");
-        addBlockChanges = con.prepareStatement(sBuilder.substring(0, sBuilder.length()-1) + ";");
-        //@formatter:on
+        sBuilder.setCharAt(sBuilder.length() - 1, ';');
+        addBlockChanges = con.prepareStatement(sBuilder.toString());
     }
 
     /**
@@ -176,8 +121,7 @@ public class DatabaseHandler {
 
             return true;
         } catch (Exception e) {
-            Main.printToConsole("Error! Can't save a block change to database!");
-            e.printStackTrace();
+            ConsoleUtils.printException(e, Main.NAME, "Can't save a block place to database! Player=" + playerName + ", Area=" + areaName + ", NewBlock=" + newBlock + ", OldBLock=" + oldBlock);
             return false;
         }
     }
@@ -194,8 +138,7 @@ public class DatabaseHandler {
 
             return true;
         } catch (Exception e) {
-            Main.printToConsole("Error! Can't save a block break to database!");
-            e.printStackTrace();
+            ConsoleUtils.printException(e, Main.NAME, "Can't save a block break to database! Player=" + playerName + ",Area=" + areaName + ",OldBLock=" + oldBlock);
             return false;
         }
     }
@@ -233,7 +176,7 @@ public class DatabaseHandler {
                 oldBlock = event.getOldBlock();
                 newBlock = event.getNewBlock();
                 sBuilder.append('(');
-                appendString(sBuilder, oldBlock.getWorldName());
+                DatabaseUtils.appendSQLString(sBuilder, oldBlock.getWorldName());
                 sBuilder.append(',');
                 sBuilder.append(oldBlock.getX());
                 sBuilder.append(",");
@@ -249,33 +192,21 @@ public class DatabaseHandler {
                 sBuilder.append(",");
                 sBuilder.append(oldBlock.getSubID());
                 sBuilder.append(",");
-                appendString(sBuilder, event.getTime());
+                DatabaseUtils.appendSQLString(sBuilder, event.getTime());
                 sBuilder.append(",");
-                appendString(sBuilder, event.getPlayerName());
+                DatabaseUtils.appendSQLString(sBuilder, event.getPlayerName());
                 sBuilder.append(",");
-                appendString(sBuilder, event.getMode());
+                DatabaseUtils.appendSQLString(sBuilder, event.getMode());
                 sBuilder.append(",");
-                appendString(sBuilder, event.getAreaName());
+                DatabaseUtils.appendSQLString(sBuilder, event.getAreaName());
                 sBuilder.append("),");
             }
-            Statement s = conHandler.getConnection().createStatement();
+            Statement s = dbConnection.getConnection().createStatement();
             s.executeUpdate(sBuilder.substring(0, sBuilder.length() - 1) + ';');
 
         } catch (Exception e) {
-            e.printStackTrace();
+            ConsoleUtils.printException(e, Main.NAME, "Can't flush the queue!");
         }
-    }
-
-    /**
-     * Used for setting a String in a MySQL Query.
-     * 
-     * @param sBuilder
-     * @param string
-     */
-    private void appendString(StringBuilder sBuilder, String string) {
-        sBuilder.append('\'');
-        sBuilder.append(string);
-        sBuilder.append('\'');
     }
 
     public boolean saveArea(Area newArea) {
@@ -289,8 +220,7 @@ public class DatabaseHandler {
             addArea.setString(7, newArea.getAreaOwner());
             return addArea.executeUpdate() == 1;
         } catch (Exception e) {
-            Main.printToConsole("Error! Can't save the area '" + newArea.getAreaName() + "' to database!");
-            e.printStackTrace();
+            ConsoleUtils.printException(e, Main.NAME, "Can't save the area '" + newArea.getAreaName() + "' to database!");
             return false;
         }
     }
@@ -317,7 +247,7 @@ public class DatabaseHandler {
                 // GET WORLD
                 world = Bukkit.getServer().getWorld(worldName);
                 if (world == null) {
-                    Main.printToConsole("Could not find world '" + worldName + "' for area '" + areaName + "'. Skipping this area.");
+                    ConsoleUtils.printError(Main.NAME, "Could not find world '" + worldName + "' for area '" + areaName + "'. Skipping this area.");
                     continue;
                 }
 
@@ -325,7 +255,7 @@ public class DatabaseHandler {
                 chunk1 = world.getChunkAt(x1, z1);
                 chunk2 = world.getChunkAt(x2, z2);
                 if (chunk1 == null || chunk2 == null) {
-                    Main.printToConsole("Could not find both chunks for area '" + areaName + "'. Skipping this area.");
+                    ConsoleUtils.printError(Main.NAME, "Could not find both chunks for area '" + areaName + "'. Skipping this area.");
                     continue;
                 }
 
@@ -333,8 +263,7 @@ public class DatabaseHandler {
                 map.put(areaName.toLowerCase(), new Area(areaName, areaOwner, worldName, chunk1, chunk2));
             }
         } catch (SQLException e) {
-            Main.printToConsole("Error! Can't load areas from database!");
-            e.printStackTrace();
+            ConsoleUtils.printException(e, Main.NAME, "Can't load areas from database!");
         }
 
         return map;

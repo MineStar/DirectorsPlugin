@@ -23,57 +23,58 @@ import org.bukkit.entity.Player;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
-import de.minestar.director.area.AreaDataHandler;
-import de.minestar.director.commands.Command;
+import de.minestar.director.area.AreaHandler;
+import de.minestar.director.database.DatabaseHandler;
 import de.minestar.director.listener.AreaDefineListener;
+import de.minestar.minestarlibrary.commands.AbstractCommand;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
-public class AreaSaveCommand extends Command {
+public class AreaSaveCommand extends AbstractCommand {
 
     private AreaDefineListener adListener;
-    private AreaDataHandler aDataHandler;
+    private AreaHandler aHandler;
+    private DatabaseHandler dbHandler;
 
-    public AreaSaveCommand(String syntax, String arguments, String node, AreaDefineListener adListener, AreaDataHandler aDataHandler) {
-        super(syntax, arguments, node);
+    public AreaSaveCommand(String syntax, String arguments, String node, AreaDefineListener adListener, DatabaseHandler dbHandler, AreaHandler aHandler) {
+        super(Main.NAME, syntax, arguments, node);
         this.adListener = adListener;
+        this.dbHandler = dbHandler;
+        this.aHandler = aHandler;
         this.description = "Erzeugt eine Area die von Director ueberwacht wird.";
-        this.aDataHandler = aDataHandler;
     }
 
     @Override
     public void execute(String[] args, Player player) {
-        if (args.length == 0) {
-            player.sendMessage("Du musst einen Namen angegeben!");
-            return;
-        }
+
         String areaName = args[0];
-        if (Main.getAreaHandler().areaExists(areaName)) {
-            player.sendMessage("Ein Area mit dem Namen '" + areaName + "' existiert bereits!");
+        if (aHandler.areaExists(areaName)) {
+            PlayerUtils.sendError(player, pluginName, "Ein Area mit dem Namen '" + areaName + "' existiert bereits!");
             return;
         }
 
         Chunk[] selection = adListener.getCorners(player.getName());
         if (selection == null) {
-            player.sendMessage("Du musst zwei Bloecke auswaehlen!");
+            PlayerUtils.sendError(player, pluginName, "Du musst zwei Bloecke auswaehlen!");
             return;
         }
 
-        // CREATE AREA , GeMoschen
+        // CREATE AREA
         Area newArea = new Area(areaName, player.getName(), selection[0].getWorld().getName(), selection[0], selection[1]);
 
         // Check if an existing area is inside the new area
-        for (Area otherArea : Main.getAreaHandler().getAreas().values()) {
+        for (Area otherArea : aHandler.getAreas().values()) {
             if (otherArea.intersectsArea(newArea)) {
-                player.sendMessage("Area '" + otherArea.getAreaName() + "' schneidet die neue Area!");
+                PlayerUtils.sendError(player, pluginName, "Area '" + otherArea.getAreaName() + "' schneidet die neue Area!");
                 return;
             }
         }
 
-        // ADD AREA , GeMoschen
-        Main.getAreaHandler().addArea(newArea);
-        // SAVE AREA TO DB , GeMoschen
-        Main.getDatabaseHandler().saveArea(newArea);
+        // ADD AREA
+        aHandler.addArea(newArea);
+        // SAVE AREA TO DB
+        dbHandler.saveArea(newArea);
 
         // SAVE AREA TO FILE AND SEND MESSAGE
-        player.sendMessage(aDataHandler.saveArea(newArea.getAreaName(), selection[0], selection[1]));
+        PlayerUtils.sendSuccess(player, pluginName, aHandler.saveArea(newArea.getAreaName(), selection[0], selection[1]));
     }
 }

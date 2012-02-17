@@ -31,11 +31,14 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import de.minestar.director.Main;
 import de.minestar.director.area.Area;
 import de.minestar.director.area.AreaHandler;
-import de.minestar.director.commands.Command;
+import de.minestar.minestarlibrary.commands.AbstractCommand;
+import de.minestar.minestarlibrary.utils.ConsoleUtils;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
-public class ShowArea extends Command {
+public class ShowArea extends AbstractCommand {
 
     private AreaHandler aHandler;
 
@@ -44,7 +47,7 @@ public class ShowArea extends Command {
     private final File borderFolder;
 
     public ShowArea(String syntax, String arguments, String node, AreaHandler aHandler, File dataFolder) {
-        super(syntax, arguments, node);
+        super(Main.NAME, syntax, arguments, node);
         this.aHandler = aHandler;
         this.description = "Zeigt die Area mit einem GlowstoneRing an";
         this.borderFolder = new File(dataFolder, "borders/");
@@ -56,7 +59,7 @@ public class ShowArea extends Command {
 
         String areaName = args[0];
         if (!aHandler.areaExists(args[0].toLowerCase())) {
-            player.sendMessage("Es existiert keine Area namens '" + areaName + "'!");
+            PlayerUtils.sendError(player, pluginName, "Es existiert keine Area namens '" + areaName + "'!");
             return;
         }
         Area area = aHandler.getArea(areaName);
@@ -80,7 +83,7 @@ public class ShowArea extends Command {
                     block.setData((byte) data[1]);
                 }
             }
-
+            PlayerUtils.sendSuccess(player, pluginName, "Begrenzung fuer '" + areaName + "' entfernt!");
         }
         // try to load data from file
         else if ((list = loadDataFromFile(areaName)) != null) {
@@ -92,6 +95,7 @@ public class ShowArea extends Command {
                     block.setData((byte) data[1]);
                 }
             }
+            PlayerUtils.sendSuccess(player, pluginName, "Begrenzung fuer '" + areaName + "' entfernt!");
         }
         // set glow stone line
         else {
@@ -109,6 +113,8 @@ public class ShowArea extends Command {
             }
             saveDataToFile(areaName, list);
             borders.put(areaName, list);
+            PlayerUtils.sendSuccess(player, pluginName, "Die Glowstonelinie zeigt den Rand der Area '" + areaName + "'!");
+            PlayerUtils.sendInfo(player, pluginName, "Mit dem Befehl '/dir show " + areaName + "' wird sie wieder entfernt!");
         }
     }
 
@@ -133,13 +139,13 @@ public class ShowArea extends Command {
             f.delete();
             return data;
         } catch (Exception e) {
-            e.printStackTrace();
+            ConsoleUtils.printException(e, pluginName, "Can't load old block data from file!");
             return null;
         }
 
     }
-    // store all data from the blocks in a file to prevent information loose
-    // because
+
+    // store all data from the blocks in a file to prevent loosing information
     private void saveDataToFile(String areaName, LinkedList<int[]> list) {
         File f = new File(borderFolder, areaName + ".data");
         try {
@@ -151,7 +157,7 @@ public class ShowArea extends Command {
             bWriter.flush();
             bWriter.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            ConsoleUtils.printException(e, pluginName, "Can't save old block data to file!");
         }
     }
 }
