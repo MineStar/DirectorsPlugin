@@ -33,6 +33,7 @@ import org.bukkit.entity.Player;
 
 import de.minestar.director.Core;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
 public class BlockSetThread implements Runnable {
 
@@ -75,6 +76,9 @@ public class BlockSetThread implements Runnable {
             for (int i = 0; i < BPT; ++i) {
                 if (!blocks.next()) {
                     Bukkit.getScheduler().cancelTask(id);
+                    for (Player player : Bukkit.getOnlinePlayers())
+                        PlayerUtils.sendSuccess(player, Core.NAME, "Der Bau ist abgeschlossen!");
+                    ConsoleUtils.printInfo(Core.NAME, "Area wurde fertiggestellt!");
                     return;
                 }
                 x = blocks.getInt(1);
