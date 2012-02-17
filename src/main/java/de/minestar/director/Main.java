@@ -23,9 +23,6 @@ import java.io.File;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -94,14 +91,8 @@ public class Main extends JavaPlugin {
 
         // Register event listener
         PluginManager pm = getServer().getPluginManager();
-        BlockListener bListener = new BlockChangeListener(dbHandler);
-        pm.registerEvent(Type.BLOCK_BREAK, bListener, Priority.Normal, this);
-        pm.registerEvent(Type.BLOCK_PLACE, bListener, Priority.Normal, this);
-
-        adListener = new AreaDefineListener(dbHandler);
-        pm.registerEvent(Type.PLAYER_INTERACT, adListener, Priority.Normal, this);
-        pm.registerEvent(Type.PLAYER_BUCKET_FILL, adListener, Priority.Normal, this);
-        pm.registerEvent(Type.PLAYER_BUCKET_EMPTY, adListener, Priority.Normal, this);
+        pm.registerEvents(new BlockChangeListener(dbHandler), this);
+        pm.registerEvents(new AreaDefineListener(dbHandler), this);
 
         AreaDataHandler aDataHandler = new AreaDataHandler(dataFolder);
 

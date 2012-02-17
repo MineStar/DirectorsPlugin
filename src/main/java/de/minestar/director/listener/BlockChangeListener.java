@@ -21,8 +21,9 @@ package de.minestar.director.listener;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -37,7 +38,7 @@ import de.minestar.director.database.DatabaseHandler;
  * @author Meldanor
  * 
  */
-public class BlockChangeListener extends BlockListener {
+public class BlockChangeListener implements Listener {
 
     private final DatabaseHandler dbHandler;
 
@@ -45,7 +46,7 @@ public class BlockChangeListener extends BlockListener {
         this.dbHandler = dbHandler;
     }
 
-    @Override
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         boolean found = false;
         Block block = event.getBlock();
@@ -66,7 +67,7 @@ public class BlockChangeListener extends BlockListener {
         }
     }
 
-    @Override
+    @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         boolean found = false;
         Block block = event.getBlock();

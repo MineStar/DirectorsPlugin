@@ -26,17 +26,18 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 
 import de.minestar.director.Main;
 import de.minestar.director.area.Area;
 import de.minestar.director.database.DatabaseHandler;
 
-public class AreaDefineListener extends PlayerListener {
+public class AreaDefineListener implements Listener {
 
     private HashSet<String> inSelectMode = new HashSet<String>();
     private HashMap<String, Block[]> selection = new HashMap<String, Block[]>();
@@ -46,7 +47,7 @@ public class AreaDefineListener extends PlayerListener {
         this.dbHandler = dbHandler;
     }
 
-    @Override
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
 
         // //////////////////////////////////////
@@ -114,7 +115,7 @@ public class AreaDefineListener extends PlayerListener {
             return false;
     }
 
-    @Override
+    @EventHandler
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         boolean found = false;
         Block block = event.getBlockClicked();
@@ -145,7 +146,7 @@ public class AreaDefineListener extends PlayerListener {
         }
     }
 
-    @Override
+    @EventHandler
     public void onPlayerBucketFill(PlayerBucketFillEvent event) {
         boolean found = false;
         Block block = event.getBlockClicked().getRelative(event.getBlockFace());
