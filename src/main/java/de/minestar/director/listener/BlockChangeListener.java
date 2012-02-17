@@ -27,7 +27,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.database.DatabaseHandler;
@@ -67,7 +67,7 @@ public class BlockChangeListener implements Listener {
 
         Player player = event.getPlayer();
         if (!dbHandler.addBlockBreak(event.getBlock(), player.getName().toLowerCase(), foundArea.getAreaName())) {
-            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
+            PlayerUtils.sendError(player, Core.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }
@@ -115,7 +115,7 @@ public class BlockChangeListener implements Listener {
          */
 
         if (!dbHandler.addBlockPlace(newBlock, oldBlock, player.getName().toLowerCase(), foundArea.getAreaName())) {
-            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
+            PlayerUtils.sendError(player, Core.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }

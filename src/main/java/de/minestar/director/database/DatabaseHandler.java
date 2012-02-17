@@ -34,7 +34,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.listener.DirectorBlock;
 import de.minestar.director.threading.BatchRunnable;
@@ -121,7 +121,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
 
             return true;
         } catch (Exception e) {
-            ConsoleUtils.printException(e, Main.NAME, "Can't save a block place to database! Player=" + playerName + ", Area=" + areaName + ", NewBlock=" + newBlock + ", OldBLock=" + oldBlock);
+            ConsoleUtils.printException(e, Core.NAME, "Can't save a block place to database! Player=" + playerName + ", Area=" + areaName + ", NewBlock=" + newBlock + ", OldBLock=" + oldBlock);
             return false;
         }
     }
@@ -138,7 +138,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
 
             return true;
         } catch (Exception e) {
-            ConsoleUtils.printException(e, Main.NAME, "Can't save a block break to database! Player=" + playerName + ",Area=" + areaName + ",OldBLock=" + oldBlock);
+            ConsoleUtils.printException(e, Core.NAME, "Can't save a block break to database! Player=" + playerName + ",Area=" + areaName + ",OldBLock=" + oldBlock);
             return false;
         }
     }
@@ -151,7 +151,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
     private void runQueue() {
         batchThread.copyList(queue);
         queue.clear();
-        Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(Main.getInstance(), batchThread, 1);
+        Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(Core.getInstance(), batchThread, 1);
     }
 
     /**
@@ -205,7 +205,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
             s.executeUpdate(sBuilder.substring(0, sBuilder.length() - 1) + ';');
 
         } catch (Exception e) {
-            ConsoleUtils.printException(e, Main.NAME, "Can't flush the queue!");
+            ConsoleUtils.printException(e, Core.NAME, "Can't flush the queue!");
         }
     }
 
@@ -220,7 +220,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
             addArea.setString(7, newArea.getAreaOwner());
             return addArea.executeUpdate() == 1;
         } catch (Exception e) {
-            ConsoleUtils.printException(e, Main.NAME, "Can't save the area '" + newArea.getAreaName() + "' to database!");
+            ConsoleUtils.printException(e, Core.NAME, "Can't save the area '" + newArea.getAreaName() + "' to database!");
             return false;
         }
     }
@@ -247,7 +247,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
                 // GET WORLD
                 world = Bukkit.getServer().getWorld(worldName);
                 if (world == null) {
-                    ConsoleUtils.printError(Main.NAME, "Could not find world '" + worldName + "' for area '" + areaName + "'. Skipping this area.");
+                    ConsoleUtils.printError(Core.NAME, "Could not find world '" + worldName + "' for area '" + areaName + "'. Skipping this area.");
                     continue;
                 }
 
@@ -255,7 +255,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
                 chunk1 = world.getChunkAt(x1, z1);
                 chunk2 = world.getChunkAt(x2, z2);
                 if (chunk1 == null || chunk2 == null) {
-                    ConsoleUtils.printError(Main.NAME, "Could not find both chunks for area '" + areaName + "'. Skipping this area.");
+                    ConsoleUtils.printError(Core.NAME, "Could not find both chunks for area '" + areaName + "'. Skipping this area.");
                     continue;
                 }
 
@@ -263,7 +263,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
                 map.put(areaName.toLowerCase(), new Area(areaName, areaOwner, worldName, chunk1, chunk2));
             }
         } catch (SQLException e) {
-            ConsoleUtils.printException(e, Main.NAME, "Can't load areas from database!");
+            ConsoleUtils.printException(e, Core.NAME, "Can't load areas from database!");
         }
 
         return map;

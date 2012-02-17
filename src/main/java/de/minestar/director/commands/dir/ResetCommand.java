@@ -20,7 +20,7 @@ package de.minestar.director.commands.dir;
 
 import org.bukkit.entity.Player;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.area.AreaHandler;
 import de.minestar.minestarlibrary.commands.AbstractCommand;
 import de.minestar.minestarlibrary.utils.PlayerUtils;
@@ -30,7 +30,7 @@ public class ResetCommand extends AbstractCommand {
     private AreaHandler aHandler;
 
     public ResetCommand(String syntax, String arguments, String node, AreaHandler aHandler) {
-        super(Main.NAME, syntax, arguments, node);
+        super(Core.NAME, syntax, arguments, node);
         this.aHandler = aHandler;
         this.description = "Resettet die Area";
     }

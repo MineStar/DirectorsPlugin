@@ -31,7 +31,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.area.AreaHandler;
 import de.minestar.minestarlibrary.commands.AbstractCommand;
@@ -47,7 +47,7 @@ public class ShowArea extends AbstractCommand {
     private final File borderFolder;
 
     public ShowArea(String syntax, String arguments, String node, AreaHandler aHandler, File dataFolder) {
-        super(Main.NAME, syntax, arguments, node);
+        super(Core.NAME, syntax, arguments, node);
         this.aHandler = aHandler;
         this.description = "Zeigt die Area mit einem GlowstoneRing an";
         this.borderFolder = new File(dataFolder, "borders/");

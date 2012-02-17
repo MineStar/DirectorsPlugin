@@ -30,7 +30,7 @@ import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.database.DatabaseHandler;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
@@ -151,7 +151,7 @@ public class AreaHandler {
             // RETURN
             return "Area saved! ( " + count + " Chunks )";
         } catch (Exception e) {
-            ConsoleUtils.printException(e, Main.NAME, "Error while writing the Area File!");
+            ConsoleUtils.printException(e, Core.NAME, "Error while writing the Area File!");
             return "Error while writing File!";
         }
     }

@@ -20,14 +20,14 @@ package de.minestar.director.commands.dir;
 
 import org.bukkit.entity.Player;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.minestarlibrary.commands.AbstractCommand;
 import de.minestar.minestarlibrary.commands.AbstractSuperCommand;
 
 public class DirCommand extends AbstractSuperCommand {
 
     public DirCommand(String syntax, String arguments, String node, AbstractCommand... subCommands) {
-        super(Main.NAME, syntax, arguments, node, subCommands);
+        super(Core.NAME, syntax, arguments, node, subCommands);
     }
 
     @Override

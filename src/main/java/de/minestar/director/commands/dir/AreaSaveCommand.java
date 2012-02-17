@@ -21,7 +21,7 @@ package de.minestar.director.commands.dir;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.database.DatabaseHandler;
@@ -36,7 +36,7 @@ public class AreaSaveCommand extends AbstractCommand {
     private DatabaseHandler dbHandler;
 
     public AreaSaveCommand(String syntax, String arguments, String node, AreaDefineListener adListener, DatabaseHandler dbHandler, AreaHandler aHandler) {
-        super(Main.NAME, syntax, arguments, node);
+        super(Core.NAME, syntax, arguments, node);
         this.adListener = adListener;
         this.dbHandler = dbHandler;
         this.aHandler = aHandler;

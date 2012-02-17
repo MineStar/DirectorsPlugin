@@ -20,7 +20,7 @@ package de.minestar.director.commands.dir;
 
 import org.bukkit.entity.Player;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.listener.AreaDefineListener;
 import de.minestar.minestarlibrary.commands.AbstractCommand;
 import de.minestar.minestarlibrary.utils.PlayerUtils;
@@ -30,7 +30,7 @@ public class SelectCommand extends AbstractCommand {
     private AreaDefineListener adListener;
 
     public SelectCommand(String syntax, String arguments, String node, AreaDefineListener adListener) {
-        super(Main.NAME, syntax, arguments, node);
+        super(Core.NAME, syntax, arguments, node);
         this.adListener = adListener;
         this.description = "Aktiviert den AreaSelektion Modus.";
     }

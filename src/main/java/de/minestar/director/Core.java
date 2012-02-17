@@ -43,14 +43,14 @@ import de.minestar.director.web.DirectorHTTP;
 import de.minestar.minestarlibrary.commands.CommandList;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
-public class Main extends JavaPlugin {
+public class Core extends JavaPlugin {
 
     public final static String NAME = "Director";
 
     // WEBSERVER
     public static HTTPPlugin thisHTTP;
 
-    private static Main instance;
+    private static Core instance;
 
     private DatabaseHandler dbHandler;
 

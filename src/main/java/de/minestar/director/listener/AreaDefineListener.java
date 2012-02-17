@@ -33,7 +33,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import de.minestar.director.Main;
+import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.database.DatabaseHandler;
@@ -80,7 +80,7 @@ public class AreaDefineListener implements Listener {
                         DirectorBlock oldBlock = new DirectorBlock(relative);
                         DirectorBlock newBlock = new DirectorBlock(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ(), Material.DOUBLE_STEP.getId(), relative.getData(), relative.getWorld().getName());
                         if (!dbHandler.addBlockPlace(newBlock, oldBlock, player.getName().toLowerCase(), foundArea.getAreaName())) {
-                            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
+                            PlayerUtils.sendError(player, Core.NAME, "Fehler beim Speichern der Änderung!");
                             event.setCancelled(true);
                         }
                     }
@@ -97,10 +97,10 @@ public class AreaDefineListener implements Listener {
 
         if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             corners[0] = event.getClickedBlock();
-            PlayerUtils.sendSuccess(player, Main.NAME, "1. Block selektiert!");
+            PlayerUtils.sendSuccess(player, Core.NAME, "1. Block selektiert!");
         } else if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             corners[1] = event.getClickedBlock();
-            PlayerUtils.sendSuccess(player, Main.NAME, "2. Block selektiert!");
+            PlayerUtils.sendSuccess(player, Core.NAME, "2. Block selektiert!");
         }
 
         // store selections
@@ -147,7 +147,7 @@ public class AreaDefineListener implements Listener {
         DirectorBlock oldBlock = new DirectorBlock(newBlock.getX(), newBlock.getY(), newBlock.getZ(), 0, (byte) 0, event.getBlockClicked().getWorld().getName());
 
         if (!dbHandler.addBlockPlace(newBlock, oldBlock, player.getName().toLowerCase(), foundArea.getAreaName())) {
-            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
+            PlayerUtils.sendError(player, Core.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }
@@ -170,7 +170,7 @@ public class AreaDefineListener implements Listener {
 
         Player player = event.getPlayer();
         if (!dbHandler.addBlockBreak(event.getBlockClicked().getRelative(event.getBlockFace()), player.getName().toLowerCase(), foundArea.getAreaName())) {
-            PlayerUtils.sendError(player, Main.NAME, "Fehler beim Speichern der Änderung!");
+            PlayerUtils.sendError(player, Core.NAME, "Fehler beim Speichern der Änderung!");
             event.setCancelled(true);
         }
     }
