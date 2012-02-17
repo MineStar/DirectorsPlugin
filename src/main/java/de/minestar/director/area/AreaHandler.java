@@ -173,7 +173,7 @@ public class AreaHandler {
             return "There is no Chunk at " + chunkPos1.x + "/" + chunkPos1.y + "! (Chunk 1)";
 
         // GET SECOND CHUNK
-        Chunk chunk2 = world.getChunkAt(chunkPos1.x, chunkPos1.y);
+        Chunk chunk2 = world.getChunkAt(chunkPos2.x, chunkPos2.y);
         if (chunk2 == null)
             return "There is no Chunk at " + chunkPos2.x + "/" + chunkPos2.y + "! (Chunk 2)";
 
