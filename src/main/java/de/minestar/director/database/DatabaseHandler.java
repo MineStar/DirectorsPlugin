@@ -72,8 +72,7 @@ public class DatabaseHandler extends AbstractDatabaseHandler {
         }
         YamlConfiguration config = new YamlConfiguration();
         config.load(configFile);
-
-        return new DatabaseConnection(pluginName, config.getString("Host"), config.getString("Port"), config.getString("Database"), config.getString("User"), config.getString("Password"));
+        return new DatabaseConnection(pluginName, DatabaseType.MySQL, config);
     }
 
     @Override

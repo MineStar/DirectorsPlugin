@@ -1,6 +1,6 @@
 name: DirectorPlugin
 main: de.minestar.director.Core
-version: 0.1 Alpha
+version: 1.0
 commands:
   dir:
     description:  DirectorPlugin related commands
