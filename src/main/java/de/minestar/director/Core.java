@@ -91,11 +91,9 @@ public class Core extends JavaPlugin {
         areaHandler = new AreaHandler(dbHandler, dataFolder);
         // Register event listener
         PluginManager pm = getServer().getPluginManager();
-
+        adListener = new AreaDefineListener(dbHandler, areaHandler);
+        pm.registerEvents(adListener, this);
         pm.registerEvents(new BlockChangeListener(dbHandler, areaHandler), this);
-        pm.registerEvents(new AreaDefineListener(dbHandler, areaHandler), this);
-
-        // INIT AREAHANDLER
 
         // INIT COMMANDLIST
         initCommandList();
