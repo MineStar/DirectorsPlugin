@@ -27,9 +27,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.bukkit.gemo.BukkitHTTP.HTTPCore;
-import com.bukkit.gemo.BukkitHTTP.HTTPPlugin;
-
 import de.minestar.director.area.AreaHandler;
 import de.minestar.director.commands.dir.AreaSaveCommand;
 import de.minestar.director.commands.dir.DirCommand;
@@ -40,7 +37,6 @@ import de.minestar.director.commands.dir.StartCommand;
 import de.minestar.director.database.DatabaseHandler;
 import de.minestar.director.listener.AreaDefineListener;
 import de.minestar.director.listener.BlockChangeListener;
-import de.minestar.director.web.DirectorHTTP;
 import de.minestar.minestarlibrary.commands.CommandList;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
@@ -49,7 +45,7 @@ public class Core extends JavaPlugin {
     public final static String NAME = "Director";
 
     // WEBSERVER
-    public static HTTPPlugin thisHTTP;
+//    public static HTTPPlugin thisHTTP;
 
     private static Core instance;
 
@@ -78,7 +74,7 @@ public class Core extends JavaPlugin {
         File dataFolder = getDataFolder();
         dataFolder.mkdirs();
 
-        dbHandler = new DatabaseHandler(NAME, dataFolder);
+        dbHandler = new DatabaseHandler(NAME, new File(dataFolder, "sqlconfig.yml"));
         // when we don't have a connection to the database, the whole plugin
         // can't work
         if (!dbHandler.hasConnection()) {
@@ -97,9 +93,9 @@ public class Core extends JavaPlugin {
 
         // INIT COMMANDLIST
         initCommandList();
-
-        // REGISTER HTTP-LISTENER
-        registerHTTP();
+//
+//        // REGISTER HTTP-LISTENER
+//        registerHTTP();
 
         instance = this;
 
@@ -131,20 +127,20 @@ public class Core extends JavaPlugin {
         return true;
     }
 
-    // REGISTER AT BukkitHTTP
-    public void registerHTTP() {
-
-        Plugin httpPlugin = Bukkit.getPluginManager().getPlugin("BukkitHTTP");
-        if (httpPlugin != null) {
-
-            if (!httpPlugin.isEnabled())
-                Bukkit.getPluginManager().enablePlugin(httpPlugin);
-
-            HTTPCore http = (HTTPCore) httpPlugin;
-            thisHTTP = new DirectorHTTP("director", "DirectorsPlugin", "DirectorsPlugin/web/", false);
-            thisHTTP.setOwn404Page(true);
-            http.registerPlugin(thisHTTP);
-        } else
-            ConsoleUtils.printError(NAME, "BukkitHTTP not found!");
-    }
+//    // REGISTER AT BukkitHTTP
+//    public void registerHTTP() {
+//
+//        Plugin httpPlugin = Bukkit.getPluginManager().getPlugin("BukkitHTTP");
+//        if (httpPlugin != null) {
+//
+//            if (!httpPlugin.isEnabled())
+//                Bukkit.getPluginManager().enablePlugin(httpPlugin);
+//
+//            HTTPCore http = (HTTPCore) httpPlugin;
+//            thisHTTP = new DirectorHTTP("director", "DirectorsPlugin", "DirectorsPlugin/web/", false);
+//            thisHTTP.setOwn404Page(true);
+//            http.registerPlugin(thisHTTP);
+//        } else
+//            ConsoleUtils.printError(NAME, "BukkitHTTP not found!");
+//    }
 }

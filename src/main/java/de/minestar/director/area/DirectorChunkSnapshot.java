@@ -30,9 +30,10 @@ public class DirectorChunkSnapshot {
     private final byte[] blockData;
 
     public static DirectorChunkSnapshot getSnapshot(Chunk chunk) {
-        net.minecraft.server.Chunk nativeChunk = ((CraftChunk) chunk).getHandle();        
+        // TODO: Updaten!
+//        net.minecraft.server.Chunk nativeChunk = ((CraftChunk) chunk).getHandle();        
         byte[] data = new byte[81920];
-        nativeChunk.getData(data, 0, 0, 0, 16, 128, 16, 0);
+//        nativeChunk.getData(data, 0, 0, 0, 16, 128, 16, 0);
         return new DirectorChunkSnapshot(chunk.getX(), chunk.getZ(), chunk.getWorld().getName(), data);
     }
 

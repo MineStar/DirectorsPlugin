@@ -8,22 +8,17 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.1-R4</version>
+			<version>1.3.1-R2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.minestar</groupId>
 			<artifactId>minestarlibrary</artifactId>
-			<version>1.4</version>
+			<version>1.9.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>craftbukkit</artifactId>
-			<version>1.1-R4</version>
-		</dependency>
-		<dependency>
-			<groupId>de.minestar</groupId>
-			<artifactId>BukkitHTTP</artifactId>
-			<version>0.50</version>
+			<version>1.3.1-R2.0</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -36,26 +31,7 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<artifactSet>
-						<includes>
-							<include>de.minestar:minestarlibrary</include>
-						</includes>
-					</artifactSet>
-				</configuration>
-			</plugin>
+			</plugin>			
 		</plugins>
 	</build>
 </project>
