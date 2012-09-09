@@ -1,6 +1,7 @@
 name: DirectorPlugin
 main: de.minestar.director.Core
 version: 1.0
+depend: [GreenMile, MineStarLibrary]
 commands:
   dir:
     description:  DirectorPlugin related commands

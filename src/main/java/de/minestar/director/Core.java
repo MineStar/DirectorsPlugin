@@ -20,10 +20,8 @@ package de.minestar.director;
 
 import java.io.File;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -42,7 +40,7 @@ import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
 public class Core extends JavaPlugin {
 
-    public final static String NAME = "Director";
+    public final static String NAME = "DirectorPlugin";
 
     // WEBSERVER
 //    public static HTTPPlugin thisHTTP;

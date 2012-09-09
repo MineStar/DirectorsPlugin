@@ -21,7 +21,6 @@ package de.minestar.director.area;
 import java.awt.Point;
 
 import org.bukkit.Chunk;
-import org.bukkit.craftbukkit.CraftChunk;
 
 public class DirectorChunkSnapshot {
     private final int x;
@@ -40,7 +39,7 @@ public class DirectorChunkSnapshot {
     public byte[] getAllData() {
         return this.blockData;
     }
-    
+
     public DirectorChunkSnapshot(int x, int z, String worldname, byte[] blockData) {
         this.x = x;
         this.z = z;
