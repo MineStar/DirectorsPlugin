@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.TreeMap;
 
 import org.bukkit.Bukkit;
@@ -37,11 +38,11 @@ import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.listener.DirectorBlock;
 import de.minestar.director.threading.BatchRunnable;
-import de.minestar.minestarlibrary.database.AbstractMySQLHandler;
+import de.minestar.minestarlibrary.database.AbstractSQLiteHandler;
 import de.minestar.minestarlibrary.database.DatabaseUtils;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
-public class DatabaseHandler extends AbstractMySQLHandler {
+public class DatabaseHandler extends AbstractSQLiteHandler {
 
     // How many BlockChanges are queued before stored in database
     private static final int QUEUE_BUFFER_SIZE = 100;
@@ -76,9 +77,10 @@ public class DatabaseHandler extends AbstractMySQLHandler {
 //        return new DatabaseConnection(pluginName, DatabaseType.MySQL, config);
 //    }
 
+
     @Override
     protected void createStructure(String pluginName, Connection con) throws Exception {
-        DatabaseUtils.createStructure(getClass().getResourceAsStream("/structure.sql"), con, pluginName);
+//        DatabaseUtils.createStructure(getClass().getResourceAsStream("/structure.sql"), con, pluginName);
     }
 
     @Override
@@ -91,13 +93,13 @@ public class DatabaseHandler extends AbstractMySQLHandler {
 
         // Create queue prepared statement
         // StringBuilder buffer = CharNumber of Head + 26 signs for each line
-        StringBuilder sBuilder = new StringBuilder(170 + (QUEUE_BUFFER_SIZE * 26));
-        sBuilder.append("INSERT INTO directorblockdata (WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) VALUES ");
-
-        for (int i = 0; i < QUEUE_BUFFER_SIZE; ++i)
-            sBuilder.append("(?,?,?,?,?,?,?,?,?,?,?,?),");
-        sBuilder.setCharAt(sBuilder.length() - 1, ';');
-        addBlockChanges = con.prepareStatement(sBuilder.toString());
+//        StringBuilder sBuilder = new StringBuilder(170 + (QUEUE_BUFFER_SIZE * 26));
+//        sBuilder.append("INSERT INTO directorblockdata (WorldName, BlockX, BlockY, BlockZ, NewBlockId, NewBlockData, OldBlockId, OldBlockData, DateTime, PlayerName, EventType, AreaName) VALUES ");
+//
+//        for (int i = 0; i < QUEUE_BUFFER_SIZE; ++i)
+//            sBuilder.append("(?,?,?,?,?,?,?,?,?,?,?,?),");
+//        sBuilder.setCharAt(sBuilder.length() - 1, ';');
+//        addBlockChanges = con.prepareStatement(sBuilder.toString());
     }
 
     /**
