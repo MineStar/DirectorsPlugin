@@ -38,7 +38,7 @@ import de.minestar.minestarlibrary.utils.PlayerUtils;
 
 public class BlockSetFromFileThread implements Runnable {
 
-    private final static int BPT = 20;
+    private int BPT = 5;
 
     private Queue<LoadedBlockChange> blocks;
     private World world;
@@ -53,7 +53,7 @@ public class BlockSetFromFileThread implements Runnable {
 
     private CraftWorld cWorld;
 
-    private List<Block> setBlocks = new LinkedList<Block>();
+//    private List<Block> setBlocks = new LinkedList<Block>();
 
     private int xD;
     private int zD;
@@ -61,7 +61,7 @@ public class BlockSetFromFileThread implements Runnable {
     private int startX;
     private int startZ;
 
-    public BlockSetFromFileThread(World world, Queue<LoadedBlockChange> blocks, int startX, int startZ, int xD, int zD) {
+    public BlockSetFromFileThread(World world, Queue<LoadedBlockChange> blocks, int startX, int startZ, int xD, int zD, int BPT) {
         this.blocks = blocks;
         this.world = world;
         this.cWorld = ((CraftWorld) world);
@@ -69,6 +69,7 @@ public class BlockSetFromFileThread implements Runnable {
         this.zD = zD;
         this.startX = startX;
         this.startZ = startZ;
+        this.BPT = BPT;
     }
 
     @Override
@@ -103,20 +104,23 @@ public class BlockSetFromFileThread implements Runnable {
                 oldId = loadedBlock.getFromID();
                 oldData = (byte) loadedBlock.getFromData();
                 block = world.getBlockAt(startX + (xD * x), y, startZ + (zD * z));
-                block.setTypeIdAndData(newId, newData, false);
-                setBlocks.add(block);
-            }
-            net.minecraft.server.World nativeWorld = ((CraftWorld) world).getHandle();
-            for (Block setBlock : setBlocks) {
-                x = setBlock.getX();
-                y = setBlock.getY();
-                z = setBlock.getZ();
-                nativeWorld.notify(x, y, z);
-                nativeWorld.applyPhysics(x, y, z, setBlock.getTypeId());
+                block.setTypeId(newId, true);
+                block.setData(newData, true);
+//                setBlocks.add(block);
                 for (Player player : Bukkit.getOnlinePlayers())
                     ((CraftPlayer) player).getHandle().netServerHandler.sendPacket(new Packet53BlockChange(x, y, z, cWorld.getHandle()));
             }
-            setBlocks.clear();
+//            net.minecraft.server.World nativeWorld = ((CraftWorld) world).getHandle();
+//            for (Block setBlock : setBlocks) {
+//                x = setBlock.getX();
+//                y = setBlock.getY();
+//                z = setBlock.getZ();
+//                nativeWorld.notify(x, y, z);
+//                nativeWorld.applyPhysics(x, y, z, setBlock.getTypeId());
+//                for (Player player : Bukkit.getOnlinePlayers())
+//                    ((CraftPlayer) player).getHandle().netServerHandler.sendPacket(new Packet53BlockChange(x, y, z, cWorld.getHandle()));
+//            }
+//            setBlocks.clear();
         } catch (Exception e) {
             ConsoleUtils.printException(e, Core.NAME, "Can't read ResultSet!");
         }

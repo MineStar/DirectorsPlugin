@@ -55,6 +55,10 @@ public class StartSelectCommand extends AbstractExtendedCommand {
                 PlayerUtils.sendError(player, pluginName, "Kein Areaname angegeben!");
                 return;
             }
+            int bpt = 10;
+            if (args.length == 2) {
+                bpt = Integer.parseInt(args[1]);
+            }
             PlayerUtils.sendInfo(player, pluginName, "Lade Daten...");
             Queue<LoadedBlockChange> loadedBlocks = loadArea(player, args[0]);
             if (loadedBlocks == null)
@@ -63,7 +67,7 @@ public class StartSelectCommand extends AbstractExtendedCommand {
             int xD = loc.getBlockX() - player.getLocation().getBlockX();
             int zD = loc.getBlockZ() - player.getLocation().getBlockZ();
 
-            BlockSetFromFileThread thread = new BlockSetFromFileThread(player.getWorld(), loadedBlocks, player.getLocation().getBlockX(), player.getLocation().getBlockZ(), xD, zD);
+            BlockSetFromFileThread thread = new BlockSetFromFileThread(player.getWorld(), loadedBlocks, player.getLocation().getBlockX(), player.getLocation().getBlockZ(), xD, zD, bpt);
             int taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.getInstance(), thread, 20, 1);
             thread.setID(taskID);
             PlayerUtils.sendSuccess(player, pluginName, "Starte mit dem Bau!");

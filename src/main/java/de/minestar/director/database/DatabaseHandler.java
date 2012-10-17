@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.TreeMap;
 
 import org.bukkit.Bukkit;
@@ -76,7 +75,6 @@ public class DatabaseHandler extends AbstractSQLiteHandler {
 //        config.load(configFile);
 //        return new DatabaseConnection(pluginName, DatabaseType.MySQL, config);
 //    }
-
 
     @Override
     protected void createStructure(String pluginName, Connection con) throws Exception {
