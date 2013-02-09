@@ -28,7 +28,7 @@ import java.util.TreeMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.v1_4_6.CraftWorld;
 
 import de.minestar.director.Core;
 import de.minestar.director.database.DatabaseHandler;
@@ -217,7 +217,7 @@ public class AreaHandler {
 
             // RESET BLOCKS
             CraftWorld cworld = (CraftWorld) world;
-            net.minecraft.server.World nativeWorld = cworld.getHandle();
+            net.minecraft.server.v1_4_6.World nativeWorld = cworld.getHandle();
             int count = 0;
             int chunkX, chunkZ;
             DirectorChunkSnapshot thisSnapshot = null;

@@ -37,17 +37,17 @@ import de.minestar.director.Core;
 import de.minestar.director.area.Area;
 import de.minestar.director.listener.DirectorBlock;
 import de.minestar.director.threading.BatchRunnable;
-import de.minestar.minestarlibrary.database.AbstractSQLiteHandler;
+import de.minestar.minestarlibrary.database.AbstractMySQLHandler;
 import de.minestar.minestarlibrary.database.DatabaseUtils;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
-public class DatabaseHandler extends AbstractSQLiteHandler {
+public class DatabaseHandler extends AbstractMySQLHandler {
 
     // How many BlockChanges are queued before stored in database
     private static final int QUEUE_BUFFER_SIZE = 100;
 
     // PREPARED STATEMENTS
-    private PreparedStatement getAllAreas, addArea, addBlockChanges, getAreaBlocks;
+    private PreparedStatement getAllAreas, addArea, /*addBlockChanges,*/ getAreaBlocks;
     // /PREPARED STATEMENTS
 
     // THREADS
@@ -59,26 +59,10 @@ public class DatabaseHandler extends AbstractSQLiteHandler {
         super(pluginName, SQLConfigFile);
     }
 
-//    public DatabaseHandler(String pluginName, File dataFolder) {
-//        super(pluginName, dataFolder);
-//        batchThread = new BatchRunnable(addBlockChanges);
-//    }
-
-//    @Override
-//    protected DatabaseConnection createConnection(String pluginName, File dataFolder) throws Exception {
-//        File configFile = new File(dataFolder, "sqlConfig.yml");
-//        if (!configFile.exists()) {
-//            DatabaseUtils.createDatabaseConfig(DatabaseType.MySQL, configFile, pluginName);
-//            return null;
-//        }
-//        YamlConfiguration config = new YamlConfiguration();
-//        config.load(configFile);
-//        return new DatabaseConnection(pluginName, DatabaseType.MySQL, config);
-//    }
-
+    
     @Override
     protected void createStructure(String pluginName, Connection con) throws Exception {
-//        DatabaseUtils.createStructure(getClass().getResourceAsStream("/structure.sql"), con, pluginName);
+        DatabaseUtils.createStructure(getClass().getResourceAsStream("/structure.sql"), con, pluginName);
     }
 
     @Override

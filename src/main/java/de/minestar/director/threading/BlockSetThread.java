@@ -19,21 +19,20 @@
 package de.minestar.director.threading;
 
 import java.sql.ResultSet;
-import java.util.LinkedList;
-import java.util.List;
-
-import net.minecraft.server.Packet53BlockChange;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import de.minestar.director.Core;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
 import de.minestar.minestarlibrary.utils.PlayerUtils;
+//import java.util.LinkedList;
+//import java.util.List;
+//import net.minecraft.server.v1_4_R1.Packet53BlockChange;
+//import org.bukkit.craftbukkit.v1_4_R1.CraftWorld;
+//import org.bukkit.craftbukkit.v1_4_R1.entity.CraftPlayer;
 
 public class BlockSetThread implements Runnable {
 
@@ -45,21 +44,21 @@ public class BlockSetThread implements Runnable {
     private int id = Integer.MAX_VALUE;
 
     private int x, y, z = 0;
-    private int newId, oldId = 0;
-    private byte newData, oldData = 0;
-    private String date = "";
-    private char type = ' ';
+    private int newId;// , oldId = 0;
+    private byte newData;// , oldData = 0;
+    // private String date = "";
+    // private char type = ' ';
 
     private Block block = null;
 
-    private CraftWorld cWorld;
+    // private CraftWorld cWorld;
 
-    private List<Block> setBlocks = new LinkedList<Block>();
+    // private List<Block> setBlocks = new LinkedList<Block>();
 
     public BlockSetThread(World world, ResultSet blocks) {
         this.blocks = blocks;
         this.world = world;
-        this.cWorld = ((CraftWorld) world);
+        // this.cWorld = ((CraftWorld) world);
     }
 
     @Override
@@ -89,25 +88,25 @@ public class BlockSetThread implements Runnable {
                 z = blocks.getInt(3);
                 newId = blocks.getInt(4);
                 newData = blocks.getByte(5);
-                oldId = blocks.getInt(6);
-                oldData = blocks.getByte(7);
-                date = blocks.getString(8);
-                type = blocks.getString(9).charAt(0);
+//                oldId = blocks.getInt(6);
+//                oldData = blocks.getByte(7);
+//                date = blocks.getString(8);
+//                type = blocks.getString(9).charAt(0);
                 block = world.getBlockAt(x, y, z);
-                block.setTypeIdAndData(newId, newData, false);
-                setBlocks.add(block);
+                block.setTypeIdAndData(newId, newData, true);
+                // setBlocks.add(block);
             }
-            net.minecraft.server.World nativeWorld = ((CraftWorld) world).getHandle();
-            for (Block setBlock : setBlocks) {
-                x = setBlock.getX();
-                y = setBlock.getY();
-                z = setBlock.getZ();
-                nativeWorld.notify(x, y, z);
-                nativeWorld.applyPhysics(x, y, z, setBlock.getTypeId());
-                for (Player player : Bukkit.getOnlinePlayers())
-                    ((CraftPlayer) player).getHandle().netServerHandler.sendPacket(new Packet53BlockChange(x, y, z, cWorld.getHandle()));
-            }
-            setBlocks.clear();
+            /*
+             * net.minecraft.server.v1_4_R1.World nativeWorld = ((CraftWorld)
+             * world).getHandle(); for (Block setBlock : setBlocks) { x =
+             * setBlock.getX(); y = setBlock.getY(); z = setBlock.getZ();
+             * nativeWorld.notify(x, y, z); nativeWorld.applyPhysics(x, y, z,
+             * setBlock.getTypeId()); for (Player player :
+             * Bukkit.getOnlinePlayers()) ((CraftPlayer)
+             * player).getHandle().netServerHandler.sendPacket(new
+             * Packet53BlockChange(x, y, z, cWorld.getHandle())); }
+             * setBlocks.clear();
+             */
         } catch (Exception e) {
             ConsoleUtils.printException(e, Core.NAME, "Can't read ResultSet!");
         }

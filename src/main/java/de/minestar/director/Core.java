@@ -32,7 +32,6 @@ import de.minestar.director.commands.dir.ResetCommand;
 import de.minestar.director.commands.dir.SelectCommand;
 import de.minestar.director.commands.dir.ShowArea;
 import de.minestar.director.commands.dir.StartCommand;
-import de.minestar.director.commands.dir.StartSelectCommand;
 import de.minestar.director.database.DatabaseHandler;
 import de.minestar.director.listener.AreaDefineListener;
 import de.minestar.director.listener.BlockChangeListener;
@@ -114,8 +113,7 @@ public class Core extends JavaPlugin {
                     new SelectCommand   ("select",  "","directorsplugin.select", adListener),
                     new ResetCommand    ("reset",   "<Name>","directorsplugin.reset", areaHandler),
                     new ShowArea        ("show",    "<AreaName>","directorsplugin.show", areaHandler, getDataFolder()),
-                    new StartCommand    ("start",   "<AreaName>","directorsplugin.start",dbHandler,areaHandler),
-                    new StartSelectCommand("starts", "[AreaName]", "directorsplugin.starts")
+                    new StartCommand    ("start",   "<AreaName>","directorsplugin.start",dbHandler,areaHandler)
             )
         );
         //@formatter:on
